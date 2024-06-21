@@ -19,14 +19,14 @@ import com.smb.app.addsapp.model.MediaItemData
 import com.smb.app.addsapp.model.Type
 
 class MediaItemAdapter(val mediaList:ArrayList<MediaItemData>,private val context: Context): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    private lateinit var exoPlayer: ExoPlayer
+  //  private var exoPlayer: ExoPlayer
     private lateinit var mediaSource: MediaSource
-    private var player: ExoPlayer? = null
+    private var currentPlayer: ExoPlayer? = null
     private var currentViewHolder: VideoViewHolder? = null
 
     init {
 
-        exoPlayer=ExoPlayer.Builder(context).build()
+       // exoPlayer=ExoPlayer.Builder(context).build()
 
     }
 
@@ -37,10 +37,11 @@ class MediaItemAdapter(val mediaList:ArrayList<MediaItemData>,private val contex
 
     class VideoViewHolder(val mBinding:VideoItemBinding ) : RecyclerView.ViewHolder(mBinding.root) {
 
-
-        fun videoBind(mediaItem: MediaItemData,exoPlayer: ExoPlayer) {
+        private var exoPlayer: ExoPlayer? = null
+        fun videoBind(mediaItem: MediaItemData) {
+            exoPlayer = ExoPlayer.Builder(mBinding.root.context).build()
             mBinding.videoView.player=exoPlayer
-            exoPlayer.addListener(object : Player.Listener{
+            exoPlayer?.addListener(object : Player.Listener{
                 override fun onPlayerError(error: PlaybackException) {
                     super.onPlayerError(error)
                     Toast.makeText(mBinding.root.context,"Can't play this video", Toast.LENGTH_SHORT).show()
@@ -71,10 +72,26 @@ class MediaItemAdapter(val mediaList:ArrayList<MediaItemData>,private val contex
                 }
             })
             val mediaItem =  MediaItem.fromUri(mediaItem.sourceUrl)
-            exoPlayer.setMediaItem(mediaItem)
-            exoPlayer.prepare()
-            exoPlayer.play()
+            exoPlayer?.setMediaItem(mediaItem)
+            exoPlayer?.prepare()
+           // exoPlayer?.play()
 
+
+
+        }
+
+        fun play() {
+            exoPlayer?.play()
+        }
+
+        fun stop() {
+            exoPlayer?.pause()
+            exoPlayer?.stop()
+        }
+
+        fun release() {
+            exoPlayer?.release()
+            exoPlayer = null
         }
     }
 
@@ -82,16 +99,26 @@ class MediaItemAdapter(val mediaList:ArrayList<MediaItemData>,private val contex
 
 
         fun ImageBind(mediaItem: MediaItemData) {
-            loadImage(mediaItem.sourceUrl,mBinding.imgBanner)
+            loadImage(mediaItem.sourceUrl,mBinding.imageBg)
         }
     }
 
 
     override fun getItemViewType(position: Int): Int {
         return when (mediaList[position].mediaType) {
-            Type.Vidio->{ VIEW_TYPE_VIDEO}
+            Type.Video->{ VIEW_TYPE_VIDEO}
             Type.Image->{ VIEW_TYPE_IMAGE}
 
+            else -> {VIEW_TYPE_IMAGE
+
+            }
+        }
+    }
+
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        super.onViewRecycled(holder)
+        if (holder is VideoViewHolder) {
+            holder.release()
         }
     }
 
@@ -110,12 +137,13 @@ class MediaItemAdapter(val mediaList:ArrayList<MediaItemData>,private val contex
         }
     }
 
-    override fun getItemCount(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getItemCount()=mediaList.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        TODO("Not yet implemented")
+        when (holder.itemViewType) {
+            VIEW_TYPE_VIDEO -> (holder as VideoViewHolder).videoBind(mediaList[position])
+            VIEW_TYPE_IMAGE -> (holder as ImageViewHolder).ImageBind(mediaList[position ])
+        }
     }
 
 }

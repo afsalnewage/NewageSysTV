@@ -108,15 +108,15 @@
         android:text="Happy Birthday"
         android:textColor="@color/white"
         android:textSize="45dp"
-        app:layout_constraintBottom_toTopOf="@+id/tittle_name"
+        app:layout_constraintBottom_toTopOf="@+id/birthday_person__name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="@+id/tittle_name"
+        app:layout_constraintStart_toStartOf="@+id/birthday_person__name"
         app:layout_constraintTop_toBottomOf="@+id/image_logo"
         app:layout_constraintVertical_chainStyle="packed" />
 
     <TextView
-        android:id="@+id/tittle_name"
+        android:id="@+id/birthday_person__name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:fontFamily="@font/sanista_regular_new"
@@ -128,7 +128,7 @@
         android:textColor="@color/white"
         android:textSize="55dp"
 
-        app:layout_constraintBottom_toTopOf="@+id/date_text"
+        app:layout_constraintBottom_toTopOf="@+id/birthday_dat"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/image_bg"
@@ -136,7 +136,7 @@
 
 
     <TextView
-        android:id="@+id/message"
+        android:id="@+id/birthday_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -149,7 +149,7 @@
         app:layout_constraintStart_toStartOf="@+id/guidelint_vert" />
 
     <TextView
-        android:id="@+id/date_text"
+        android:id="@+id/birthday_dat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/inter"
@@ -157,11 +157,11 @@
         android:textColor="@color/white"
         android:textSize="19dp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/message"
+        app:layout_constraintBottom_toTopOf="@+id/birthday_message"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@id/image_bg"
-        app:layout_constraintTop_toBottomOf="@+id/tittle_name" />
+        app:layout_constraintTop_toBottomOf="@+id/birthday_person__name" />
 
 
     <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->

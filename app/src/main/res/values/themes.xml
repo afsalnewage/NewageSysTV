@@ -6,4 +6,15 @@
     </style>
 
     <style name="Theme.NASTV" parent="Base.Theme.NASTV" />
+    <style name="SplashTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@drawable/app_icon_new</item>
+
+        <!-- Optionally, customize other attributes like text color, etc. -->
+    </style>
+    <style name="SecondaryTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ic_banner_background</item>
+
+        <!-- Optionally, customize other attributes like text color, etc. -->
+    </style>
+
 </resources>

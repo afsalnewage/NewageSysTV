@@ -3,4 +3,22 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="pink">#D149B6</color>
+    <color name="golden">#E4BE34</color>
+    <color name="golden_light">#E2C860</color>
+    <color name="green">#7EDB92</color>
+
+    <color name="brown">#32100B</color>
+    <color name="deep_red">#8B1A10</color>
+    <color name="golden_gray">#C8BB8E</color>
+    <color name="red">#D3212B</color>
+    <color name="offWhite">#F4F2EA</color>
+
+
+    <color name="off_white">#C5D4FF</color>
+    <color name="background_gradient_start">#000000</color>
+    <color name="background_gradient_end">#DDDDDD</color>
+    <color name="fastlane_background">#0096a6</color>
+    <color name="search_opaque">#ffaa3f</color>
+    <color name="selected_background">#ffaa3f</color>
+    <color name="default_background">#3d3d3d</color>
 </resources>

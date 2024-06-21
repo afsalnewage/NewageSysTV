@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "259074036838",
+    "project_id": "newagetv-cd4fd",
+    "storage_bucket": "newagetv-cd4fd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:259074036838:android:c2a9d3c94ac065800809a7",
+        "android_client_info": {
+          "package_name": "com.dev.nastv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOfKQ9oRJMA4EyVcjYbz6XxB0FoI1J5xE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
