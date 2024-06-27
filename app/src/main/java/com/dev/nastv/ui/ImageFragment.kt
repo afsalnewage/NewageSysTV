@@ -1,44 +1,35 @@
 package com.dev.nastv.ui
 
 import android.annotation.SuppressLint
-import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
 import android.text.Spannable
-import android.text.SpannableString
-import android.text.Spanned
 import android.text.SpannedString
 import android.text.style.RelativeSizeSpan
-import android.text.style.StyleSpan
-import android.text.style.SubscriptSpan
 import android.text.style.SuperscriptSpan
-import androidx.fragment.app.Fragment
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
-import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
-import androidx.core.text.italic
-import androidx.core.text.underline
+import androidx.fragment.app.Fragment
 import com.dev.nastv.R
 import com.dev.nastv.databinding.FragmentImageBinding
-import com.dev.nastv.databinding.FragmentVideoBinding
 import com.dev.nastv.model.TvMedia
 import com.dev.nastv.model.Type
 import com.dev.nastv.model.getType
-import com.dev.nastv.uttils.AppUittils
 import com.dev.nastv.uttils.AppUittils.applyFadeInAnimation
 import com.dev.nastv.uttils.AppUittils.applySlideInAnimation
 import com.dev.nastv.uttils.AppUittils.formatDateString
 import com.dev.nastv.uttils.AppUittils.getOrdinalSuffix
 import com.dev.nastv.uttils.AppUittils.loadImage
 import com.dev.nastv.uttils.CustomTypefaceSpan
-import com.smb.app.addsapp.model.MediaItemData
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
-import java.util.Date
 import java.util.concurrent.TimeUnit
 
 
@@ -46,11 +37,15 @@ private const val ARG_MEDIA_IMG = "media_data_img"
 
 class ImageFragment : Fragment() {
 
-    private var param1: String? = null
-    private var param2: String? = null
-    private var _binding: FragmentImageBinding? = null
+    private var exoPlayer: ExoPlayer? = null
 
-    private var newjoineframviews = listOf<View>()
+    private var _binding: FragmentImageBinding? = null
+    private val birthdayMusic = R.raw.happy_birthday
+    private val newJoineeMusic = R.raw.whip_afro_dancehall
+    private val anniversaryMusic = R.raw.infinte_melodic_beat
+    private val customMusic = R.raw.sunset_piano
+
+
     private val binding get() = _binding!!
     private var mediaData: TvMedia? = null
     private lateinit var mediaTyp: Type
@@ -60,8 +55,8 @@ class ImageFragment : Fragment() {
         damping = 0.9f,
         spread = 360,
         colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-        emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(1000),
-        position = Position.Relative(0.5, 0.2)
+        emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(600),
+        position = Position.Relative(0.1, 0.1)
     )
 
     val anniversary_party = Party(
@@ -70,8 +65,8 @@ class ImageFragment : Fragment() {
         damping = 0.9f,
         spread = 360,
         colors = listOf(0xfce23a, 0xff706d, 0xf7906d, 0xb044def),
-        emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(1000),
-        position = Position.Relative(0.6, 0.2)
+        emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(600),
+        position = Position.Relative(0.1, 0.1)
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,9 +79,8 @@ class ImageFragment : Fragment() {
         }
 
 
-
-
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -95,7 +89,34 @@ class ImageFragment : Fragment() {
 
         _binding = FragmentImageBinding.inflate(inflater, container, false)
 
+        val data = when (mediaTyp) {
+            Type.Image -> {
+                customMusic
+            }
 
+            Type.Birthday -> {
+                birthdayMusic
+            }
+
+            Type.NewJoinee -> {
+                newJoineeMusic
+            }
+
+            Type.Anniversary -> {
+                anniversaryMusic
+            }
+
+
+            else -> {}
+        }
+
+        exoPlayer = ExoPlayer.Builder(requireContext()).build()
+        val mediaItem: MediaItem =
+            MediaItem.fromUri("android.resource://" + requireContext().packageName + "/" + data)
+        exoPlayer!!.setMediaItem(mediaItem)
+
+        exoPlayer!!.setRepeatMode(ExoPlayer.REPEAT_MODE_ONE)
+        exoPlayer!!.prepare()
 
         return binding.root
     }
@@ -117,17 +138,18 @@ class ImageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
+        Log.d("Source2img", mediaData?.file_url.toString())
 
         when (mediaTyp) {
             Type.Image -> {
-                binding.customFrame.visibility=View.VISIBLE
+                binding.customFrame.visibility = View.VISIBLE
                 loadImage(mediaData?.file_url, binding.customImage)
             }
+
             Type.Birthday -> {
                 binding.newjoineeFrame.visibility = View.GONE
                 binding.anniversaryFrame.visibility = View.GONE
-                binding.customFrame.visibility=View.GONE
+                binding.customFrame.visibility = View.GONE
                 binding.birthdayFrame.visibility = View.VISIBLE
                 binding.birthdayPersonName.text = mediaData?.user_name
                 binding.popperView.start(party = party)
@@ -140,8 +162,9 @@ class ImageFragment : Fragment() {
                 binding.newjoineeFrame.visibility = View.GONE
                 binding.anniversaryFrame.visibility = View.VISIBLE
                 binding.birthdayFrame.visibility = View.GONE
-                binding.customFrame.visibility=View.GONE
+                binding.customFrame.visibility = View.GONE
                 loadImage(mediaData?.file_url, binding.profileAnniversary)
+
                 binding.popperView.start(party = anniversary_party)
                 binding.anniversaryProfileName.text = mediaData?.user_name
                 binding.anniversaryProfileDesignation.text = mediaData?.user_position
@@ -155,7 +178,7 @@ class ImageFragment : Fragment() {
                 binding.newjoineeFrame.visibility = View.VISIBLE
                 binding.anniversaryFrame.visibility = View.GONE
                 binding.birthdayFrame.visibility = View.GONE
-                binding.customFrame.visibility=View.GONE
+                binding.customFrame.visibility = View.GONE
 
                 binding.apply {
                     loadImage(mediaData?.file_url, this.profileNewjoinee)
@@ -231,6 +254,8 @@ class ImageFragment : Fragment() {
     override fun onPause() {
         super.onPause()
 
+        exoPlayer?.pause()
+
         binding.apply {
             this.logo1.visibility = View.INVISIBLE
             this.newjoineeProfileName.visibility = View.INVISIBLE
@@ -248,7 +273,18 @@ class ImageFragment : Fragment() {
             this.textProfessionalBackground.visibility = View.INVISIBLE
             this.profileNewjoinee.visibility = View.INVISIBLE
             this.imgBannerNewjoinee.visibility = View.INVISIBLE
+
+            this.imgBannerAanniversary.visibility = View.INVISIBLE
+            this.profileAnniversary.visibility = View.INVISIBLE
+            this.imgBanner.visibility = View.INVISIBLE
+            this.imageBg.visibility = View.INVISIBLE
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        exoPlayer?.stop()
+        exoPlayer?.release()
     }
 
     override fun onResume() {
@@ -256,7 +292,7 @@ class ImageFragment : Fragment() {
 //        binding.newjoineeFrame.visibility=View.VISIBLE
 //        binding.anniversaryFrame.visibility=View.GONE
 //        binding.birthdayFrame.visibility=View.GONE
-
+        exoPlayer?.play()
         when (mediaTyp) {
             Type.NewJoinee -> {
                 applyFadeInAnimation(binding.imgBannerNewjoinee)
@@ -276,10 +312,14 @@ class ImageFragment : Fragment() {
             }
 
             Type.Birthday -> {
+                applyFadeInAnimation(binding.imageBg)
+                applyFadeInAnimation(binding.imgBanner)
                 binding.popperView.start(party = party)
             }
 
             Type.Anniversary -> {
+                applyFadeInAnimation(binding.imgBannerAanniversary)
+                applyFadeInAnimation(binding.profileAnniversary)
                 binding.popperView.start(party = anniversary_party)
             }
 
@@ -288,5 +328,13 @@ class ImageFragment : Fragment() {
             }
         }
 
+    }
+
+    override fun onStop() {
+        super.onStop()
+        exoPlayer?.pause()
+        exoPlayer?.stop();
+        exoPlayer?.release();
+        exoPlayer = null;
     }
 }

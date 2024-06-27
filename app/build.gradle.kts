@@ -62,6 +62,7 @@ dependencies {
             implementation("androidx.constraintlayout:constraintlayout:2.1.4")
             implementation("junit:junit:4.13.2")
     implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
+    implementation("com.google.firebase:firebase-crashlytics-buildtools:3.0.2")
     // implementation(project(mapOf("path" to ":app")))
    // implementation(project(mapOf("path" to ":app")))
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -83,7 +84,7 @@ dependencies {
 //    kapt("com.google.dagger:hilt-android-compiler:2.42")
 //    implementation ("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
 //   // kapt ("androidx.hilt:hilt-compiler:1.0.0")
-
+    implementation ("com.airbnb.android:lottie:3.4.0")
     implementation( "com.google.dagger:hilt-android:2.47")
     kapt ("com.google.dagger:hilt-android-compiler:2.47")
 
@@ -92,6 +93,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+   // implementation ("com.squareup.okhttp3:logging-interceptor:2.9.0")
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     implementation ("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
 
@@ -102,6 +104,7 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
+    implementation ("io.socket:socket.io-client:2.0.0")
 
     implementation ("com.github.SMehranB:AnimatedTextView:1.1.0")
 

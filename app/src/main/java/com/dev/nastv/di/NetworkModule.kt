@@ -1,15 +1,20 @@
 package com.dev.nastv.di
 
+import android.app.Application
 import android.content.Context
 import com.dev.nastv.apis.ApiService
+import com.dev.nastv.network.AuthorizationInterceptor
 import com.dev.nastv.network.FlowCallAdapterFactory
 import com.dev.nastv.uttils.AppConstant.BASE_URL
+import com.dev.nastv.uttils.ConnectivityObserver
+import com.dev.nastv.uttils.NetworkConnectivityObserver
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import okhttp3.MediaType.Companion.toMediaType
 //import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.OkHttpClient
@@ -23,6 +28,7 @@ import java.util.concurrent.TimeUnit
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
 
+
     @Provides
     @Singleton
     fun provideJson() = Json {
@@ -34,7 +40,7 @@ class NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(
-       // networkInterceptor: AuthorizationInterceptor,
+        networkInterceptor: AuthorizationInterceptor,
         @ApplicationContext context: Context
     ): OkHttpClient =
         OkHttpClient.Builder().run {
@@ -47,7 +53,7 @@ class NetworkModule {
             readTimeout(1, TimeUnit.MINUTES)
             writeTimeout(1, TimeUnit.MINUTES)
             callTimeout(1, TimeUnit.MINUTES)
-           // addInterceptor(networkInterceptor)
+            addInterceptor(networkInterceptor)
             build()
         }
 
@@ -75,6 +81,26 @@ class NetworkModule {
         retrofit: Retrofit
     ): ApiService = retrofit.create(ApiService::class.java)
 
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(
+        @ApplicationContext context: Context
+    ): ConnectivityObserver {
+        return NetworkConnectivityObserver(context)
+    }
 
+    @Singleton
+    @Provides
+    fun provideAuthorizationInterceptor(
+       // app: Application,
+        //dataStoreManager: DataStoreManager,
+      //  @ApplicationScope externalScope: CoroutineScope
+    ) = AuthorizationInterceptor()
+
+    @Singleton
+    @Provides
+    fun getBaseUrl(): String {
+        return BASE_URL
+    }
 
 }

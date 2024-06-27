@@ -1,5 +1,6 @@
 package com.dev.nastv.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,37 +12,78 @@ import com.dev.nastv.MainActivity
 import com.dev.nastv.R
 import com.dev.nastv.databinding.FragmentVideoBinding
 import com.dev.nastv.model.TvMedia
+import com.dev.nastv.uttils.AppUittils.getSimpleCache
+import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.PlaybackException
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.util.MimeTypes
 import com.smb.app.addsapp.model.MediaItemData
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.util.concurrent.TimeUnit
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
+
+import com.google.android.exoplayer2.upstream.DefaultDataSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.cache.Cache
+import com.google.android.exoplayer2.upstream.cache.CacheDataSource
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
+import com.google.android.exoplayer2.upstream.cache.SimpleCache
+import java.io.File
 
 
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 private const val ARG_MEDIA = "media_data"
 
 
 class VideoFragment : Fragment() {
 
+
+    private var  sourceLoaded=false
     private lateinit var exoPlayer: ExoPlayer
-    private var mediaData:TvMedia?=null
-     //private lateinit var binding: FragmentVideoBinding
+    private var mediaData: TvMedia? = null
+
+
+    private lateinit var dataSourceFactory: DataSource.Factory
+
 
     private var _binding: FragmentVideoBinding? = null
     private val binding get() = _binding!!
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-//            param1 = it.getString(ARG_PARAM1)
-//            param2 = it.getString(ARG_PARAM2)
-            mediaData=it.getSerializable(ARG_MEDIA)as TvMedia
+
+            mediaData = it.getSerializable(ARG_MEDIA) as TvMedia
         }
+//        Log.d("Source2vid", mediaData?.file_url.toString())
+
+
+        val cache = getSimpleCache(requireContext())
+
+        // Set up HTTP data source factory with custom headers
+        val httpDataSourceFactory = DefaultHttpDataSource.Factory().apply {
+            setConnectTimeoutMs(8000)
+            setReadTimeoutMs(8000)
+            setAllowCrossProtocolRedirects(true)
+            setDefaultRequestProperties(mapOf("User-Agent" to "newage_tv"))
+        }
+
+        // Set up cache data source factory
+        val cacheDataSourceFactory = CacheDataSource.Factory()
+            .setCache(cache)
+            .setUpstreamDataSourceFactory(httpDataSourceFactory)
+            .setCacheWriteDataSinkFactory(null) // Read-only cache
+
+
+        // Create default data source factory
+        dataSourceFactory = DefaultDataSource.Factory(requireContext(), cacheDataSourceFactory)
     }
 
     override fun onCreateView(
@@ -55,11 +97,11 @@ class VideoFragment : Fragment() {
     companion object {
 
         @JvmStatic        //MediaItemData
-        fun newInstance( media: TvMedia) =
+        fun newInstance(media: TvMedia) =
             VideoFragment().apply {
                 arguments = Bundle().apply {
 
-                    putSerializable(ARG_MEDIA,media)
+                    putSerializable(ARG_MEDIA, media)
                 }
             }
     }
@@ -67,87 +109,112 @@ class VideoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
- exoPlayer=ExoPlayer.Builder(requireContext()).build()
 
 
-//        binding.textMessage.addOnAnimationListener(object: AnimatedTextView.AnimationListener{
-//            override fun onAnimationStart(text: String, bareText: String) {
-//
-//
-//            }
-//
-//            override fun onAnimationEnd(text: String, bareText: String) {
-//
-//            }
-//        })
+    //    exoPlayer = ExoPlayer.Builder(requireContext()).build()
+
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                32 * 1024,  // Min buffer size in milliseconds
+                64 * 1024,  // Max buffer size in milliseconds
+                1500,       // Min playback start buffer size in milliseconds
+                2500        // Min playback resume buffer size in milliseconds
+            ).build()
 
 
-       // binding.textMessage.getBareText()
+        exoPlayer = ExoPlayer.Builder(requireContext())
+            .setLoadControl(loadControl)
+            .build()
 
 
 
-   binding.videoView.player=exoPlayer
-exoPlayer.addListener(object : Player.Listener{
-    override fun onPlayerError(error: PlaybackException) {
-        super.onPlayerError(error)
-        Toast.makeText(binding.root.context,"Can't play this video", Toast.LENGTH_SHORT).show()
 
 
-    }
-
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        super.onPlaybackStateChanged(playbackState)
-
-        when (playbackState) {
-
-
-            Player.STATE_BUFFERING -> {
-                binding.progressBar.visibility = View.VISIBLE
-
-            }
-            Player.STATE_READY -> {
-                binding.progressBar.visibility = View.GONE
-                binding.textMessage.visibility=View.VISIBLE
-               binding.textMessage.setText(mediaData!!.title)
-               // binding.textMessage.startSparkleAnimation()
-             //   binding.textMessage.animateTo("Monthly gathering May 2024",)
-              //  binding.textMessage.canScrollHorizontally(0)
-//             val party=   Party(
-//                    speed = 0f,
-//                    maxSpeed = 30f,
-//                    damping = 0.9f,
-//                    spread = 360,
-//                    colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-//                    emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(1000),
-//                    position = Position.Relative(0.5, 0.5)
-//                )
-//
-//                binding.popperView.start(party =party )
+        binding.videoView.player = exoPlayer
+        exoPlayer.addListener(object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                super.onPlayerError(error)
+                Toast.makeText(binding.root.context, "Can't play this video", Toast.LENGTH_SHORT)
+                    .show()
 
 
             }
-            Player.STATE_ENDED -> {
-                Log.d("TTT","player state end")
-                (activity as? MainActivity)?.scrollToNextPage()
 
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                super.onPlaybackStateChanged(playbackState)
+
+                when (playbackState) {
+
+
+                    Player.STATE_BUFFERING -> {
+                        binding.animationView.visibility = View.VISIBLE
+                        binding.animationView.playAnimation()
+
+
+                    }
+
+                    Player.STATE_READY -> {
+                        binding.animationView.pauseAnimation()
+                        binding.animationView.visibility = View.GONE
+                        binding.textMessage.visibility = View.VISIBLE
+                        binding.textMessage.setText(mediaData!!.title)
+                        binding.textMessage.isSelected = true
+                        // binding.textMessage.startSlidingAnimation()
+                        binding.textMessage.startAnimation()
+
+
+                    }
+
+                    Player.STATE_ENDED -> {
+                        Log.d("TTT", "player state end")
+                        (activity as? MainActivity)?.scrollToNextPage()
+
+                    }
+                }
             }
-        }
-    }
-})
+        })
 
-val mediaItem =  MediaItem.fromUri(mediaData!!.file_url)
-exoPlayer.setMediaItem(mediaItem)
-exoPlayer.prepare()
+
+        val mediaSource: MediaSource =
+            ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(MediaItem.fromUri(mediaData!!.file_url))
+        sourceLoaded=true
+        exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.prepare()
+        Log.d("Source2vid1", mediaData?.file_url.toString())
+
+//        val mediaItem1 = MediaItem.Builder()
+//            .setUri(mediaData!!.file_url)
+//            .setMimeType(MimeTypes.APPLICATION_MPD)
+//            .build()
+//val mediaItem =  MediaItem.fromUri(mediaData!!.file_url)
+//exoPlayer.setMediaItem(mediaItem1)
+//exoPlayer.prepare()
 //exoPlayer.play()
-}
+    }
 
     override fun onResume() {
         super.onResume()
-        exoPlayer.playWhenReady = true
+        Log.d("Source2vid2", mediaData?.file_url.toString())
+        if (!sourceLoaded){
+            val mediaSource: MediaSource =
+                ProgressiveMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(MediaItem.fromUri(mediaData!!.file_url))
+            sourceLoaded=true
+            exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.prepare()
+            exoPlayer.playWhenReady = true
+        }
+
         exoPlayer.play()
 
         binding.textMessage.setText(mediaData!!.title)
+        binding.textMessage.isSelected = true
+        //  binding.textMessage.startSlidingAnimation()
+
+        binding.textMessage.startAnimation()
         //binding.textMessage.animateTo("Monthly gathering May 2024",)
+        sourceLoaded=false
     }
 
     override fun onPause() {
@@ -155,9 +222,30 @@ exoPlayer.prepare()
         exoPlayer.pause()
     }
 
+//    override fun onStop() {
+//        super.onStop()
+//        exoPlayer.stop()
+//        exoPlayer.release()
+//    }
+
     override fun onDestroy() {
         super.onDestroy()
         exoPlayer.stop()
         exoPlayer.release()
     }
+
+
+//    fun createDataSourceFactory(context: Context): DefaultDataSource.Factory {
+//        val httpDataSourceFactory = DefaultHttpDataSource.Factory().apply {
+//            setDefaultRequestProperties(
+//                mapOf(
+//                    "User-Agent" to "YourAppName",
+//                    "Authorization" to "Bearer your_token"
+//                )
+//            )
+//        }
+//        return DefaultDataSource.Factory(context, httpDataSourceFactory)
+//    }
+
+
 }

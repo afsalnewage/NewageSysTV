@@ -4,6 +4,7 @@ import com.dev.nastv.apis.ApiService
 import com.dev.nastv.apis.BaseResponse
 import com.dev.nastv.model.MediaResponse
 import kotlinx.coroutines.flow.Flow
+import okhttp3.RequestBody
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,7 +12,7 @@ import javax.inject.Singleton
 class AppRepository @Inject constructor( private val apiService: ApiService) {
 
 
-    fun getMediaItems():Flow<ApiResponse<BaseResponse<MediaResponse>>>{
+    fun getMediaItems(where:String):Flow<ApiResponse<BaseResponse<MediaResponse>>>{
         return  apiService.getMediaItems()
     }
 }

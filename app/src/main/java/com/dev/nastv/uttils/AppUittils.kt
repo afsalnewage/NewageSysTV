@@ -1,5 +1,7 @@
 package com.dev.nastv.uttils
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import android.view.View
 import android.view.ViewGroup
@@ -7,19 +9,30 @@ import android.widget.ImageView
 import androidx.annotation.RequiresApi
 import com.bumptech.glide.Glide
 import com.dev.nastv.R
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
+import com.google.android.exoplayer2.upstream.cache.SimpleCache
+import java.io.File
 import java.lang.Exception
+import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 object AppUittils {
+    @SuppressLint("UseCompatLoadingForDrawables")
     fun loadImage(url: String?, imgView: ImageView) {
-        try {
-            Glide.with(imgView.context).load(url).centerCrop().placeholder(R.color.green)
+
+
+        if (!url.isNullOrBlank()){
+
+            Glide.with(imgView.context).load(url)
+                .placeholder(R.color.green)
                 .into(imgView)
-        } catch (e: Exception) {
+
+        } else {
+             imgView.scaleType=ImageView.ScaleType.FIT_XY
             Glide.with(imgView.context).load(imgView.context.getDrawable(R.drawable.avatar))
-                .centerCrop().placeholder(R.color.green).into(imgView)
+                .fitCenter().placeholder(R.color.green).into(imgView)
         }
 
     }
@@ -71,4 +84,25 @@ object AppUittils {
         // Format the date to the desired output format
         return date.format(outputFormatter)
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getCurrentDate(): String {
+        val currentDate = LocalDate.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        return currentDate.format(formatter)
+    }
+
+
+
+        private var simpleCache: SimpleCache? = null
+
+        fun getSimpleCache(context: Context): SimpleCache {
+            if (simpleCache == null) {
+                val cacheDirectory = File(context.cacheDir, "media")
+                val evictor = LeastRecentlyUsedCacheEvictor(100 * 1024 * 1024) // 100MB max cache size
+                simpleCache = SimpleCache(cacheDirectory, evictor)
+            }
+            return simpleCache!!
+        }
+
 }

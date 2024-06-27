@@ -5,8 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+<!--    <com.dev.nastv.uttils.CustomViewPager-->
+      <androidx.viewpager2.widget.ViewPager2
 
-    <androidx.viewpager2.widget.ViewPager2
+
+
         android:id="@+id/main_pager"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -17,268 +20,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/main_rv"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
-
-<!--    <com.google.android.exoplayer2.ui.PlayerView-->
-<!--        android:id="@+id/video_view"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:visibility="visible"-->
-<!--        android:background="@android:color/black"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.5"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:show_buffering="when_playing"-->
-<!--        app:show_shuffle_button="false"-->
-<!--        app:show_next_button="false"-->
-<!--        app:show_previous_button="false"-->
-<!--        app:use_controller="false"-->
-<!--        app:resize_mode="fill"-->
-<!--        />-->
 
 
 
 
-<!--    <ProgressBar-->
-<!--        android:id="@+id/progressBar"-->
-<!--        style="?android:attr/progressBarStyle"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:visibility="gone"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/animation"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:lottie_autoPlay="false"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/loading_anim" />
 
 
 
-<!--    <ImageView-->
-<!--            android:id="@+id/img_fame"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:adjustViewBounds="true"-->
-<!--            android:scaleType="fitXY"-->
-<!--            android:src="@drawable/video_frame"-->
-<!--            android:visibility="visible"-->
-<!--            app:layout_constraintBottom_toBottomOf="parent"-->
-<!--            app:layout_constraintEnd_toEndOf="parent"-->
-<!--            app:layout_constraintHorizontal_bias="0.0"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toTopOf="parent"-->
-<!--            app:layout_constraintVertical_bias="0.0"-->
-<!--            app:layout_constraintWidth_default="percent" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/text_message"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:singleLine="true"-->
-<!--        android:ellipsize="marquee"-->
-<!--        android:marqueeRepeatLimit ="marquee_forever"-->
-<!--        android:focusable="true"-->
-<!--        android:focusableInTouchMode="true"-->
-<!--        android:scrollHorizontally="true"-->
-<!--        android:layout_marginEnd="16dp"-->
-<!--        android:text="Monthly gathering May 2024"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="32dp"-->
-<!--        android:textStyle="bold"-->
-<!--        android:gravity="center_vertical"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/guideline_horiz2"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/guideline_vet1"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/guideline_horiz1" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/text_message"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:singleLine="true"-->
-<!--        android:ellipsize="marquee"-->
-<!--        android:marqueeRepeatLimit="marquee_forever"-->
-<!--        android:focusable="true"-->
-<!--        android:focusableInTouchMode="true"-->
-<!--        android:scrollHorizontally="true"-->
-<!--        android:text="Monthly gathering May 2024"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="32sp"-->
-<!--        android:textStyle="bold"-->
-<!--        android:gravity="center_vertical"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/guideline_horiz2"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/guideline_vet1"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/guideline_horiz1" />-->
-<!--    android:background="@drawable/border"-->
-<!--    <nl.dionsegijn.konfetti.xml.KonfettiView-->
-<!--        android:id="@+id/popper_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
-<!--    <nl.dionsegijn.konfetti.xml.KonfettiView-->
-<!--        android:id="@+id/popper_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
-
-    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
-    <!--        android:id="@+id/inner_lay"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="match_parent">-->
-<!--    <ImageView-->
-<!--        android:id="@+id/image_bg"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:adjustViewBounds="true"-->
-<!--        android:scaleType="centerCrop"-->
-<!--        android:src="@drawable/man"-->
-<!--        android:visibility="visible"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/guideline_horiz_botom"-->
-<!--        app:layout_constraintEnd_toStartOf="@+id/guidelint_vert"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/guidelint_vert_first"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/guideline_horiz" />-->
-<!--    &lt;!&ndash;    app:layout_constraintDimensionRatio="16:9"&ndash;&gt;-->
-
-<!--    &lt;!&ndash;    app:layout_constraintDimensionRatio="16:9"&ndash;&gt;-->
-
-<!--    <ImageView-->
-<!--        android:id="@+id/img_banner"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:adjustViewBounds="true"-->
-<!--        android:scaleType="fitXY"-->
-<!--        android:src="@drawable/bg_wishes"-->
-<!--        android:visibility="visible"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.0"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        app:layout_constraintVertical_bias="0.0"-->
-<!--        app:layout_constraintWidth_default="percent" />-->
-
-<!--    <androidx.constraintlayout.widget.Guideline-->
-<!--        android:id="@+id/guideline_horiz1"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        app:layout_constraintGuide_percent="0.18" />-->
-
-<!--    <androidx.constraintlayout.widget.Guideline-->
-<!--        android:id="@+id/guideline_horiz"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        app:layout_constraintGuide_percent="0.18" />-->
-
-<!--    <androidx.constraintlayout.widget.Guideline-->
-<!--        android:id="@+id/guideline_horiz_botom"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        app:layout_constraintGuide_percent="0.82" />-->
-
-<!--    <androidx.constraintlayout.widget.Guideline-->
-<!--        android:id="@+id/guideline_horiz_botom2"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="horizontal"-->
-<!--        app:layout_constraintGuide_percent="0.9" />-->
-
-<!--    <androidx.constraintlayout.widget.Guideline-->
-<!--        android:id="@+id/guidelint_vert"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="vertical"-->
-<!--        app:layout_constraintGuide_percent="0.52" />-->
-
-<!--    <androidx.constraintlayout.widget.Guideline-->
-<!--        android:id="@+id/guidelint_vert_first"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:orientation="vertical"-->
-<!--        app:layout_constraintGuide_percent="0.1" />-->
-
-<!--    <ImageView-->
-<!--        android:id="@+id/image_logo"-->
-<!--        android:layout_width="180dp"-->
-<!--        android:layout_height="60dp"-->
-<!--        android:paddingHorizontal="0dp"-->
-<!--        android:src="@drawable/logo_color__1_"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/guidelint_vert"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/guideline_horiz1"-->
-<!--        app:srcCompat="@drawable/logo_color__1_" />-->
-
-
-<!--    <TextView-->
-<!--        android:id="@+id/title_text"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:fontFamily="@font/sanista_regular_new"-->
-<!--        android:text="Happy Birthday"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="45dp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/tittle_name"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.5"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/tittle_name"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/image_logo"-->
-<!--        app:layout_constraintVertical_chainStyle="packed" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/tittle_name"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:fontFamily="@font/sanista_regular_new"-->
-<!--        android:gravity="center"-->
-<!--        android:lineSpacingExtra="0dp"-->
-<!--        android:maxLines="2"-->
-<!--        android:paddingHorizontal="30dp"-->
-<!--        android:text="Shine Kumar"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="55dp"-->
-
-<!--        app:layout_constraintBottom_toTopOf="@+id/date_text"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.5"-->
-<!--        app:layout_constraintStart_toEndOf="@+id/image_bg"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/title_text" />-->
-
-
-<!--    <TextView-->
-<!--        android:id="@+id/message"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginBottom="8dp"-->
-<!--        android:fontFamily="@font/sanista_regular_new"-->
-<!--        android:text="@string/wish_msg"-->
-<!--        android:textColor="@color/pink"-->
-<!--        android:textSize="19dp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/guideline_horiz_botom"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/guidelint_vert" />-->
-
-<!--    <TextView-->
-<!--        android:id="@+id/date_text"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:fontFamily="@font/inter"-->
-<!--        android:text="10 May 2024"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="19dp"-->
-<!--        android:textStyle="bold"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/message"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintHorizontal_bias="0.5"-->
-<!--        app:layout_constraintStart_toEndOf="@id/image_bg"-->
-<!--        app:layout_constraintTop_toBottomOf="@+id/tittle_name" />-->
 
 
 

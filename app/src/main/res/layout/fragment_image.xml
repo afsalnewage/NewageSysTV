@@ -21,7 +21,7 @@
             android:scaleType="fitXY"
             android:src="@drawable/man"
             android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@+id/custom_frame"
+            app:layout_constraintBottom_toBottomOf="@+id/guideline2"
             app:layout_constraintEnd_toEndOf="@+id/custom_frame"
             app:layout_constraintStart_toStartOf="@+id/custom_frame"
             app:layout_constraintTop_toTopOf="@+id/custom_frame" />
@@ -38,6 +38,13 @@
             app:layout_constraintEnd_toEndOf="@+id/custom_frame"
             app:layout_constraintStart_toStartOf="@+id/custom_frame"
             app:layout_constraintTop_toTopOf="@+id/custom_frame"/>
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.91" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -324,8 +331,8 @@
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
-            android:src="@drawable/work_aniversery_frame"
-            android:visibility="visible"
+            android:src="@drawable/work_anniversery_new"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -338,15 +345,16 @@
             android:id="@+id/profile_anniversary"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_margin="12dp"
+            android:layout_margin="0dp"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:src="@drawable/avatar"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@+id/guideline_botom1"
+            android:visibility="gone"
+            android:foreground="@drawable/image_border"
+            app:layout_constraintBottom_toBottomOf="@+id/guideline_botom12"
             app:layout_constraintEnd_toStartOf="@+id/guideline_vert2"
             app:layout_constraintStart_toStartOf="@+id/guideline_vert1"
-            app:layout_constraintTop_toTopOf="@+id/guideline_top1" />
+            app:layout_constraintTop_toTopOf="@+id/guideline_top12" />
 
         <!--        android:text="Happy 2nd Work anniversery"-->
         <!--        android:textColor="@color/golden"-->
@@ -358,6 +366,7 @@
             android:fontFamily="@font/sanista_regular_new"
             android:gravity="center"
             android:maxLines="2"
+            android:visibility="visible"
             android:paddingEnd="5dp"
             android:text="Happy 2nd work annniversery dfjlskjflksjlkfj"
             android:textAlignment="center"
@@ -426,6 +435,12 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.11" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_top12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.2" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_center"
@@ -433,6 +448,12 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.5" />
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_botom12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.80" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_botom1"
@@ -453,7 +474,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.46" />
+            app:layout_constraintGuide_percent="0.40" />
 
         <TextView
             android:id="@+id/tittle_top"
@@ -484,7 +505,7 @@
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
             android:src="@drawable/man"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="@+id/guideline_horiz_botom"
             app:layout_constraintEnd_toStartOf="@+id/guidelint_vert"
             app:layout_constraintStart_toStartOf="@+id/guidelint_vert_first"
@@ -500,7 +521,7 @@
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
             android:src="@drawable/bg_wishes"
-            android:visibility="visible"
+            android:visibility="invisible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"

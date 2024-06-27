@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
@@ -21,6 +22,24 @@ class SlidingTextView @JvmOverloads constructor(
 //        post { startSlidingAnimation() }
 //    }
 
+    fun startAnimation() {
+        post {
+            val textWidth = paint.measureText(text.toString())
+            val viewWidth = width.toFloat()
+
+            if (textWidth > viewWidth) {
+                // Text is too long, use marquee animation
+                ellipsize = TextUtils.TruncateAt.MARQUEE
+                marqueeRepeatLimit = -1
+                isSelected = true
+                isSingleLine = true
+                setHorizontallyScrolling(true)
+            } else {
+                // Text fits, use sliding animation
+                startSlidingAnimation()
+            }
+        }
+    }
      fun startSlidingAnimation() {
         val text = text.toString()
         spannableStringBuilder.clear()
@@ -46,6 +65,8 @@ class SlidingTextView @JvmOverloads constructor(
             }
             animator.start()
         }
+
+
     }
 
     private class SlidingSpan : ReplacementSpan() {
