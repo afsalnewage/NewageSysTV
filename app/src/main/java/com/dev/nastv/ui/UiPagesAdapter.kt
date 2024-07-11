@@ -1,5 +1,6 @@
 package com.dev.nastv.ui
 
+import android.annotation.SuppressLint
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
@@ -35,6 +36,7 @@ class UiPagesAdapter(val fa:FragmentActivity, val mediaList:ArrayList<TvMedia>):
         return  mediaList.size
     }
 
+    @SuppressLint("SuspiciousIndentation")
     override fun createFragment(position: Int): Fragment {
 
         val mData=mediaList[position]
@@ -48,7 +50,7 @@ class UiPagesAdapter(val fa:FragmentActivity, val mediaList:ArrayList<TvMedia>):
 
           return  when (mediaList[position].event_type) {
                 "Video" -> {
-                    VideoFragment.newInstance(mData)
+                    VideoFragment.newInstance(mData,mediaList.size)
 
                 }
                 "Image" -> {

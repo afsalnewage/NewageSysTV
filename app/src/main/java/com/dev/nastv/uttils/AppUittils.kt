@@ -3,6 +3,8 @@ package com.dev.nastv.uttils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
+import android.os.Environment
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -13,6 +15,8 @@ import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvicto
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
 import java.io.File
 import java.lang.Exception
+import java.net.MalformedURLException
+import java.net.URL
 import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -20,17 +24,18 @@ import java.util.Locale
 
 object AppUittils {
     @SuppressLint("UseCompatLoadingForDrawables")
-    fun loadImage(url: String?, imgView: ImageView) {
+    fun loadImage(url: String?, imgView: ImageView, scaleType :ImageView.ScaleType=ImageView.ScaleType.FIT_XY) {
 
 
         if (!url.isNullOrBlank()){
-
+Log.d("TTR","Url")
             Glide.with(imgView.context).load(url)
                 .placeholder(R.color.green)
                 .into(imgView)
 
         } else {
-             imgView.scaleType=ImageView.ScaleType.FIT_XY
+            Log.d("TTR","Url dummy")
+             imgView.scaleType=scaleType
             Glide.with(imgView.context).load(imgView.context.getDrawable(R.drawable.avatar))
                 .fitCenter().placeholder(R.color.green).into(imgView)
         }
@@ -104,5 +109,44 @@ object AppUittils {
             }
             return simpleCache!!
         }
+
+    fun getFileIfExists(context: Context, fileName: String): File? {
+        val externalStorageDir = Environment.getExternalStorageDirectory()
+
+        // Create the path to Android/media/com.dev.nastv
+        val mediaDir = File(externalStorageDir, "Android/media/com.dev.nastv")
+        val appSpecificDir = File(mediaDir, "com.dev.nastv.media")
+
+        if (!appSpecificDir.exists()) {
+            appSpecificDir.mkdirs()
+        }
+
+        val file = File(appSpecificDir, fileName)
+        return if (file.exists()) file else null
+    }
+
+    fun getFilesInDirectory(context: Context): List<File> {
+        val externalStorageDir = Environment.getExternalStorageDirectory()
+        val mediaDir = File(externalStorageDir, "Android/media/com.dev.nastv")
+        val appSpecificDir = File(mediaDir, "com.dev.nastv.media")
+
+        if (!appSpecificDir.exists()) {
+            return emptyList()
+        }
+
+        return appSpecificDir.listFiles()?.toList() ?: emptyList()
+    }
+
+
+    fun getFileTypeFromUrl(url: String): String? {
+        try {
+            val urlObject = URL(url)
+            val path = urlObject.path
+            val extension = path.substringAfterLast(".")
+            return if (extension.isEmpty()) null else extension.lowercase()
+        } catch (e: MalformedURLException) {
+            return null
+        }
+    }
 
 }

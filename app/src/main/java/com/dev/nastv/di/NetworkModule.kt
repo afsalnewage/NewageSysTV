@@ -1,8 +1,8 @@
 package com.dev.nastv.di
 
-import android.app.Application
 import android.content.Context
 import com.dev.nastv.apis.ApiService
+//import com.dev.nastv.db.AppDatabase
 import com.dev.nastv.network.AuthorizationInterceptor
 import com.dev.nastv.network.FlowCallAdapterFactory
 import com.dev.nastv.uttils.AppConstant.BASE_URL
@@ -14,7 +14,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
 import okhttp3.MediaType.Companion.toMediaType
 //import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import okhttp3.OkHttpClient
@@ -102,5 +101,23 @@ class NetworkModule {
     fun getBaseUrl(): String {
         return BASE_URL
     }
+
+
+//    @Provides
+//    @Singleton
+//    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+//        return Room.databaseBuilder(
+//            context.applicationContext,
+//            AppDatabase::class.java,
+//            "app_database"
+//        ).build()
+//    }
+
+//    @Provides
+//    @Singleton
+//    fun provideDownloadDao(database: AppDatabase): DownloadDao {
+//        return database.downloadDao()
+//    }
+
 
 }

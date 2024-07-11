@@ -3,6 +3,8 @@ package com.dev.nastv.ui
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Spannable
 import android.text.SpannedString
 import android.text.style.RelativeSizeSpan
@@ -11,9 +13,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.annotation.RequiresApi
 import androidx.core.text.buildSpannedString
 import androidx.fragment.app.Fragment
+import com.dev.nastv.MainActivity
 import com.dev.nastv.R
 import com.dev.nastv.databinding.FragmentImageBinding
 import com.dev.nastv.model.TvMedia
@@ -45,7 +49,12 @@ class ImageFragment : Fragment() {
     private val anniversaryMusic = R.raw.infinte_melodic_beat
     private val customMusic = R.raw.sunset_piano
 
-
+    private val handler = Handler(Looper.getMainLooper())
+    private val autoScrollRunnable = object : Runnable {
+        override fun run() {
+            (activity as? MainActivity)?.scrollToNextPage()
+        }
+    }
     private val binding get() = _binding!!
     private var mediaData: TvMedia? = null
     private lateinit var mediaTyp: Type
@@ -69,6 +78,14 @@ class ImageFragment : Fragment() {
         position = Position.Relative(0.1, 0.1)
     )
 
+
+    private fun startAutoScroll() {
+        handler.postDelayed(autoScrollRunnable, 10000)
+    }
+
+    private fun stopAutoScroll() {
+        handler.removeCallbacks(autoScrollRunnable)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -151,10 +168,11 @@ class ImageFragment : Fragment() {
                 binding.anniversaryFrame.visibility = View.GONE
                 binding.customFrame.visibility = View.GONE
                 binding.birthdayFrame.visibility = View.VISIBLE
-                binding.birthdayPersonName.text = mediaData?.user_name
+                binding.birthdayPersonName.text = mediaData?.title
                 binding.popperView.start(party = party)
                 binding.birthdayDat.text = formatDateString(mediaData!!.end_date)
-                loadImage(mediaData?.file_url, binding.imageBg)
+                binding.imgBanner.visibility=View.GONE
+                loadImage(mediaData?.file_url, binding.imageBg, scaleType = ImageView.ScaleType.CENTER_INSIDE)
 
             }
 
@@ -166,7 +184,7 @@ class ImageFragment : Fragment() {
                 loadImage(mediaData?.file_url, binding.profileAnniversary)
 
                 binding.popperView.start(party = anniversary_party)
-                binding.anniversaryProfileName.text = mediaData?.user_name
+                binding.anniversaryProfileName.text = mediaData?.title
                 binding.anniversaryProfileDesignation.text = mediaData?.user_position
                 binding.anniversaryTittle.text =
                     setAnniversaryYearText(mediaData?.anniversary_year ?: 0)
@@ -182,7 +200,7 @@ class ImageFragment : Fragment() {
 
                 binding.apply {
                     loadImage(mediaData?.file_url, this.profileNewjoinee)
-                    this.newjoineeProfileName.text = mediaData?.user_name
+                    this.newjoineeProfileName.text = mediaData?.title
                     this.newjoineeDesignation.text = mediaData?.user_position
                     this.textJoiningDate.text =
                         "Date of joining: ${formatDateString(mediaData!!.event_date)}"
@@ -253,7 +271,7 @@ class ImageFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-
+      //  stopAutoScroll()
         exoPlayer?.pause()
 
         binding.apply {
@@ -292,6 +310,7 @@ class ImageFragment : Fragment() {
 //        binding.newjoineeFrame.visibility=View.VISIBLE
 //        binding.anniversaryFrame.visibility=View.GONE
 //        binding.birthdayFrame.visibility=View.GONE
+       // startAutoScroll()
         exoPlayer?.play()
         when (mediaTyp) {
             Type.NewJoinee -> {

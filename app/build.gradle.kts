@@ -4,7 +4,8 @@ plugins {
     id ("kotlin-kapt")
     id("com.google.dagger.hilt.android")
 
-    id("com.google.gms.google-services")
+//    id("com.google.gms.google-services")
+//    id("com.google.firebase.crashlytics")
    // id("dagger.hilt.android.plugin")
     //kotlin("kapt") version "2.42"
 }
@@ -97,9 +98,12 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     implementation ("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:0.8.0")
 
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
+
     //firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
-    implementation("com.google.firebase:firebase-analytics")
+//    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+//    implementation("com.google.firebase:firebase-analytics")
+//    implementation("com.google.firebase:firebase-crashlytics")
 
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
@@ -109,6 +113,11 @@ dependencies {
     implementation ("com.github.SMehranB:AnimatedTextView:1.1.0")
 
     implementation ("nl.dionsegijn:konfetti-xml:2.0.4")
+
+
+    implementation ("androidx.room:room-runtime:2.4.0")
+    kapt ("androidx.room:room-compiler:2.4.0")
+    implementation ("androidx.room:room-ktx:2.4.0")
 
    // implementation ( "com.hanks:htextview-base:0.1.6")        // base library
 //

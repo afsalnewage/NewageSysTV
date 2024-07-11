@@ -358,7 +358,7 @@
 
         <!--        android:text="Happy 2nd Work anniversery"-->
         <!--        android:textColor="@color/golden"-->
-        <!--        <com.dev.nastv.uttils.GradientTextView-->
+
         <TextView
             android:id="@+id/anniversary_tittle"
             android:layout_width="0dp"
@@ -504,8 +504,10 @@
             android:layout_height="0dp"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/man"
+            android:src="@drawable/avatar"
             android:visibility="invisible"
+
+            android:foreground="@drawable/image_border"
             app:layout_constraintBottom_toBottomOf="@+id/guideline_horiz_botom"
             app:layout_constraintEnd_toStartOf="@+id/guidelint_vert"
             app:layout_constraintStart_toStartOf="@+id/guidelint_vert_first"

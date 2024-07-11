@@ -22,6 +22,8 @@ data class TvMedia(
 //    @JsonAdapter(EnumDeserializer::class)
 //    val event_type: Type,
     val file_url: String,
+    var video_width:Int=0,
+    var video_height:Int=0,
     var hobbies: String?="",
     var message: String?="",
     var professional_background: String?="",

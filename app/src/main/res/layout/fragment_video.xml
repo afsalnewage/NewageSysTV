@@ -17,15 +17,15 @@
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/guideline_vet21"
         app:layout_constraintTop_toBottomOf="@+id/guideline_horiz22"
-
         app:show_shuffle_button="false"
         app:show_next_button="false"
         app:show_previous_button="false"
         app:use_controller="false"
-        app:resize_mode="fill"
+         app:resize_mode="fit"
+        android:orientation="vertical"
         />
 <!--    app:show_buffering="when_playing"-->
-
+<!--    app:resize_mode="fill"-->
 
 
 
