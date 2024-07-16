@@ -1,18 +1,15 @@
 package com.dev.nastv.ui
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import androidx.fragment.app.FragmentStatePagerAdapter
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.dev.nastv.model.TvMedia
-import com.smb.app.addsapp.model.MediaItemData
-import com.smb.app.addsapp.model.Type
+
 //(val fa:FragmentActivity, val mediaList:ArrayList<TvMedia>): FragmentStateAdapter(fa)
 
-class UiPagesAdapter(val fa:FragmentActivity, val mediaList:ArrayList<TvMedia>): FragmentStateAdapter(fa) {
+class UiPagesAdapter(val fa:FragmentActivity, var mediaList:ArrayList<TvMedia>): FragmentStateAdapter(fa) {
 //    override fun getCount()=mediaList.size
 //
 //    override fun getItem(position: Int): Fragment {
@@ -31,6 +28,15 @@ class UiPagesAdapter(val fa:FragmentActivity, val mediaList:ArrayList<TvMedia>):
 //
 //
 //    }
+//fun updateData(newMediaList: List<TvMedia>) {
+//    mediaList.addAll(newMediaList)
+//    notifyDataSetChanged()
+//}
+    fun updateData(item: List<TvMedia>) {
+    Log.d("TTTT","adding item${item}")
+      //  mediaList.addAll(item)
+      //  notifyDataSetChanged()
+    }
 
     override fun getItemCount(): Int {
         return  mediaList.size

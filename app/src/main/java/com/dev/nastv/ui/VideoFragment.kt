@@ -104,14 +104,14 @@ class VideoFragment : Fragment() {
                 2500
             ).build()
 
-//        exoPlayer = ExoPlayer.Builder(requireContext())
-//            .setLoadControl(loadControl)
-//            .build()
-
         exoPlayer = ExoPlayer.Builder(requireContext())
-            .setRenderersFactory(DefaultRenderersFactory(requireContext()))
             .setLoadControl(loadControl)
             .build()
+
+//        exoPlayer = ExoPlayer.Builder(requireContext())
+//            .setRenderersFactory(DefaultRenderersFactory(requireContext()))
+//            //.setLoadControl(loadControl)
+//            .build()
 
         binding.videoView.player = exoPlayer
         exoPlayer.addListener(object : Player.Listener {
@@ -124,10 +124,15 @@ class VideoFragment : Fragment() {
 
                 when(error.errorCode){
 
-                    PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED->{
-                        exoPlayer.release()
-
+                    PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED,
+                    PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED,
+                    PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED,
+                    PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
+                    ->{
                         (activity as? MainActivity)?.scrollToNextPage()
+                        exoPlayer.release()
+                        sourceLoaded = false
+
                     }
                     PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
                     PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT->{
@@ -165,12 +170,14 @@ class VideoFragment : Fragment() {
         val file = getFileIfExists(requireContext(), fileName)
 
         val mediaItem = if (file != null) {
-            val uri = Uri.fromFile(file)
-            MediaItem.fromUri(uri)
+
+            MediaItem.fromUri(Uri.fromFile(file))
+
         } else {
             MediaItem.fromUri(mediaData!!.file_url)
         }
 
+        showToast(requireContext(),"internal media on Create ${file?.name}")
         val mediaSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
             .createMediaSource(mediaItem)
         sourceLoaded = true
@@ -193,13 +200,14 @@ class VideoFragment : Fragment() {
         if (!sourceLoaded) {
             val fileName = "${mediaData!!._id}.${getFileTypeFromUrl(mediaData!!.file_url)}"
             val file = getFileIfExists(requireContext(), fileName)
+
             val mediaItem = if (file != null) {
                 val uri = Uri.fromFile(file)
                 MediaItem.fromUri(uri)
             } else {
                 MediaItem.fromUri(mediaData!!.file_url)
             }
-
+            showToast(requireContext(),"internal media onResume ${file?.name}")
             val mediaSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(mediaItem)
             sourceLoaded = true

@@ -6,6 +6,7 @@ import android.animation.Animator
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -18,11 +19,11 @@ import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkContinuation
 import androidx.work.WorkInfo
@@ -42,22 +43,21 @@ import com.dev.nastv.uttils.ConnectivityObserver
 import com.dev.nastv.uttils.SessionUtils
 import com.dev.nastv.worker.DownloadWorker
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_NAME
-import com.dev.nastv.worker.DownloadWorker.Companion.KEY_RESULT_PATH
 import dagger.hilt.android.AndroidEntryPoint
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.MalformedURLException
-import java.net.URL
+import java.util.UUID
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-
+   private lateinit var   sharedPreferences: SharedPreferences
+   //= getSharedPreferences("work_ids", Context.MODE_PRIVATE)
     private lateinit var workManager: WorkManager
 
     // private lateinit var firebase: FirebaseMessaging
@@ -74,7 +74,7 @@ class MainActivity : AppCompatActivity() {
     // val mediaList = ArrayList<MediaItemData>()
     val mediaList = ArrayList<TvMedia>()
     private lateinit var viewModel: MainViewModel
-
+   private val filteredList =ArrayList<TvMedia>()
     private val handler = Handler(Looper.getMainLooper())
     private val autoScrollRunnable = object : Runnable {
         override fun run() {
@@ -100,14 +100,19 @@ class MainActivity : AppCompatActivity() {
         val workManager = WorkManager.getInstance(this)
         var workContinuation: WorkContinuation? = null
         val validFileNames = mutableListOf<String>()
+        val workRequests = mutableListOf<OneTimeWorkRequest>()
+        val downloadingItems= mutableListOf<String>()
+        val finalList =ArrayList<TvMedia>()
         for (data in dataList) {
             if (data.event_type == "Video") {
                 val fileName = "${data._id}.${AppUittils.getFileTypeFromUrl(data.file_url)}"
                 val file = AppUittils.getFileIfExists(this, fileName)
                 validFileNames.add(fileName)
-
+                downloadingItems.add(data._id)
                 if (file != null) {
                     Log.d("DownloadScheduler", "File already exists: $fileName")
+                   // viewModel.updateFinalList(data)
+                    finalList.add(data)
                     continue
                 } else {
                     val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
@@ -117,6 +122,9 @@ class MainActivity : AppCompatActivity() {
                                 KEY_FILE_NAME to data._id
                             )
                         ).build()
+                    workRequests.add(downloadWorkRequest)
+
+                    viewModel.addItemToDownloading(data._id)
 
                     if (workContinuation == null) {
                         workContinuation = workManager.beginWith(downloadWorkRequest)
@@ -124,6 +132,37 @@ class MainActivity : AppCompatActivity() {
                         workContinuation = workContinuation.then(downloadWorkRequest)
                     }
                 }
+            }else{
+              //viewModel.updateFinalList(data)
+                finalList.add(data)
+            }
+
+            if (filteredList.isNotEmpty()){
+              viewModel.updateFinalList(filteredList)
+            }else{
+                viewModel.updateFinalList(finalList)
+            }
+
+        }
+
+//        if (workRequests.isNotEmpty()) {
+//            workManager.enqueue(workRequests)
+//            val workIds = workRequests.map { it.id }
+//            viewModel.updateWorkIds(workIds)
+//        }
+
+        if (workRequests.isNotEmpty()) {
+            workManager.enqueue(workRequests)
+            val workIds = workRequests.map { it.id }
+            viewModel.updateWorkIds(workIds)
+
+            // Save workIds to SharedPreferences
+            val workIdStrings = workIds.map { it.toString() }.toSet()
+            val sharedPreferences = getSharedPreferences("work_ids", Context.MODE_PRIVATE)
+            with(sharedPreferences.edit()) {
+                putStringSet("work_ids_set", workIdStrings)
+                putStringSet("valid_file_names", downloadingItems.toSet())
+                apply()
             }
         }
 
@@ -147,6 +186,70 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun checkWorkStatusOnAppStart() {
+     ///   val sharedPreferences = getSharedPreferences("work_ids", Context.MODE_PRIVATE)
+        val workIdStrings = sharedPreferences.getStringSet("work_ids_set", emptySet()) ?: emptySet()
+        val downloadingFiles = sharedPreferences.getStringSet("valid_file_names", emptySet()) ?: emptySet()
+
+        if (workIdStrings.isNotEmpty()) {
+            val workIds = workIdStrings.map { UUID.fromString(it) }
+            viewModel.updateWorkIds(workIds) // Update ViewModel with workIds
+            observeWorkStatus(workIds)
+
+            if (downloadingFiles.isNotEmpty()){
+                val list=mediaList.filterNot {data ->
+                    downloadingFiles.contains(data._id)
+                }
+                filteredList.addAll(list)
+            }
+        } else {
+            // No existing workIds, proceed with API call and scheduling downloads if needed
+            // scheduleDownloads(dataList) // Call this method with the appropriate data list
+
+        }
+    }
+
+    private fun observeWorkStatus(workIds: List<UUID>) {
+        workIds.forEach { workId ->
+            WorkManager.getInstance(this).getWorkInfoByIdLiveData(workId).observe(this) { workInfo ->
+                if (workInfo != null) {
+                    when (workInfo.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            val fileName = workInfo.outputData.getString(KEY_FILE_NAME)
+                            if (fileName != null) {
+                                viewModel.removeItemFromDownloading(fileName)
+                            }
+                            viewModel.incrementCompletedRequests()
+                        }
+                        WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
+                            val fileName = workInfo.outputData.getString(KEY_FILE_NAME)
+                            if (fileName != null) {
+                                viewModel.removeItemFromDownloading(fileName)
+                            }
+                            viewModel.incrementCompletedRequests()
+                        }
+                        else -> {}
+                    }
+
+                    val totalRequests = workIds.size
+                    if (viewModel.completedRequests.value == totalRequests || totalRequests == 0) {
+                        onAllDownloadsComplete()
+
+                        // Remove workIds from SharedPreferences after completion
+                      //  val sharedPreferences = getSharedPreferences("work_ids", Context.MODE_PRIVATE)
+                        with(sharedPreferences.edit()) {
+                            remove("work_ids_set")
+                            remove("valid_file_names")
+                            apply()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
     override fun onStart() {
         super.onStart()
 
@@ -163,6 +266,7 @@ class MainActivity : AppCompatActivity() {
 //        setContentView(R.layout.activity_main)
         binding = ActivityMainBinding.inflate(layoutInflater)
         workManager = WorkManager.getInstance(applicationContext)
+        sharedPreferences=getSharedPreferences("work_ids", Context.MODE_PRIVATE)
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
@@ -189,39 +293,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        checkWorkStatusOnAppStart()
+
+        viewModel.finalMediaLit.observe(this){
+//            mediaList.clear()
+//            mediaList.addAll(it)
+            Log.e("TTTTT","List update")
+            pagerAdapter = UiPagesAdapter(this,it)
+            updatePager()
+        }
 
 
-        viewModel.workId.observe(this, Observer {
-            it?.let { id ->
-                workManager.getWorkInfoByIdLiveData(id).observe(this, Observer { workInfo ->
 
-                    when (workInfo.state) {
-                        WorkInfo.State.ENQUEUED -> {
-                            binding.progressBar2.visibility = View.VISIBLE
-                        }
-
-                        WorkInfo.State.RUNNING -> {
-                            binding.progressBar2.visibility = View.VISIBLE
-                        }
-
-                        WorkInfo.State.CANCELLED -> {
-                            binding.progressBar2.visibility = View.GONE
-                        }
-
-                        WorkInfo.State.SUCCEEDED -> {
-                            binding.progressBar2.visibility = View.GONE
-                        }
-
-                        else -> {}
-                    }
-                    Log.d("WorkInfo23", "${workInfo.state}")
-                    //val da= workInfo.
-                    val workResult = workInfo.outputData.getString(KEY_RESULT_PATH)
-                    Log.d("WorkInfo23", "downloaded path $workResult")
-                })
-            }
-
-        })
 
 
 
@@ -251,20 +334,40 @@ class MainActivity : AppCompatActivity() {
                         binding.animation.pauseAnimation()
                         binding.animation.visibility = View.GONE
 
+                        //val downloadingItems = viewModel.downloadingItems.value
+//                        val filteredList = it.data.data!!.tv_apps.filterNot { tvMedia ->
+//                            downloadingItems.contains(tvMedia._id)
+//                        }
+
                         mediaList.addAll(it.data.data!!.tv_apps)
-                        pagerAdapter = UiPagesAdapter(this, it.data.data!!.tv_apps)
+                        pagerAdapter = UiPagesAdapter(this,it.data.data!!.tv_apps)
                         updatePager()
 
-
-                        scheduleDownloads(it.data.data!!.tv_apps)
+//                        if (mediaList.isNotEmpty()){
+//                            mediaList.clear()
+//                        }
+//                        mediaList.addAll(it.data.data!!.tv_apps)
+//                        scheduleDownloads(it.data.data!!.tv_apps)
 
 
                     } else {
                         showToast(it.data?.message ?: "data is null")
                     }
                 }
+
+                else -> {}
             }
         }
+
+
+//        viewModel.downloadingItems.observe(this) { downloadingItems ->
+//            val filteredList = mediaList.filterNot { tvMedia ->
+//                downloadingItems.contains(tvMedia._id)
+//            }
+//          //  pagerAdapter = UiPagesAdapter
+//          //  pagerAdapter.updateData(filteredList as ArrayList<TvMedia>)
+//        }
+
 
 
         // Initialize Socket
@@ -289,7 +392,16 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun onAllDownloadsComplete() {
+        val downloadingItems = viewModel.downloadingItems.value ?: emptySet()
+        val downloadingFiles = sharedPreferences.getStringSet("valid_file_names", emptySet()) ?: emptySet()
 
+        val filteredList = mediaList.filterNot { tvMedia ->
+        //    downloadingItems.contains(tvMedia._id)
+                     downloadingFiles.contains(tvMedia._id)
+        }
+        viewModel.updateFinalList(ArrayList(filteredList))
+    }
     private fun updatePager() {
         applyFadeInAnimation(binding.mainPager)
         binding.mainPager.adapter = pagerAdapter
