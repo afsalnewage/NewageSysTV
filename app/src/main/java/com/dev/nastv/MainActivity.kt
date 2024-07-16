@@ -7,6 +7,7 @@ import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -34,6 +35,7 @@ import com.dev.nastv.databinding.ActivityMainBinding
 import com.dev.nastv.model.TvMedia
 import com.dev.nastv.network.Resource
 import com.dev.nastv.ui.MainViewModel
+import com.dev.nastv.ui.MediaItemsAdapter
 import com.dev.nastv.ui.UiPagesAdapter
 import com.dev.nastv.uttils.AppUittils
 import com.dev.nastv.uttils.AppUittils.applyFadeInAnimation
@@ -43,6 +45,8 @@ import com.dev.nastv.uttils.ConnectivityObserver
 import com.dev.nastv.uttils.SessionUtils
 import com.dev.nastv.worker.DownloadWorker
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_NAME
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
 import dagger.hilt.android.AndroidEntryPoint
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
@@ -60,6 +64,7 @@ class MainActivity : AppCompatActivity() {
    //= getSharedPreferences("work_ids", Context.MODE_PRIVATE)
     private lateinit var workManager: WorkManager
 
+    private lateinit var exoPlayer: ExoPlayer
     // private lateinit var firebase: FirebaseMessaging
     private lateinit var binding: ActivityMainBinding
     private lateinit var socket: Socket
@@ -70,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var pagerAdapter: UiPagesAdapter
-
+    private lateinit var rvAdapter: MediaItemsAdapter
     // val mediaList = ArrayList<MediaItemData>()
     val mediaList = ArrayList<TvMedia>()
     private lateinit var viewModel: MainViewModel
@@ -271,6 +276,8 @@ class MainActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
 
+        exoPlayer= ExoPlayer.Builder(this).build()
+
         Log.d("TOKEN_refresh", SessionUtils.refreshToken.toString())
         Log.d("TOKEN_auth", SessionUtils.authToken.toString())
 
@@ -299,8 +306,8 @@ class MainActivity : AppCompatActivity() {
 //            mediaList.clear()
 //            mediaList.addAll(it)
             Log.e("TTTTT","List update")
-            pagerAdapter = UiPagesAdapter(this,it)
-            updatePager()
+            //pagerAdapter = UiPagesAdapter(this,it)
+            //updatePager()
         }
 
 
@@ -340,7 +347,11 @@ class MainActivity : AppCompatActivity() {
 //                        }
 
                         mediaList.addAll(it.data.data!!.tv_apps)
-                        pagerAdapter = UiPagesAdapter(this,it.data.data!!.tv_apps)
+                        //pagerAdapter = UiPagesAdapter(this,it.data.data!!.tv_apps)
+                        rvAdapter= MediaItemsAdapter(exoPlayer,this,it.data.data!!.tv_apps){mediaItem, url,pos ->
+
+                            Log.d("RRRT","tittle $url           $pos")
+                        }
                         updatePager()
 
 //                        if (mediaList.isNotEmpty()){
@@ -404,7 +415,7 @@ class MainActivity : AppCompatActivity() {
     }
     private fun updatePager() {
         applyFadeInAnimation(binding.mainPager)
-        binding.mainPager.adapter = pagerAdapter
+        binding.mainPager.adapter =rvAdapter         // pagerAdapter       rvAdapter
         binding.mainPager.offscreenPageLimit = 1
         //  binding.mainPager.setPageTransformer(DepthPageTransformer())
         binding.mainPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
@@ -412,8 +423,34 @@ class MainActivity : AppCompatActivity() {
                 super.onPageSelected(position)
                 handler.removeCallbacks(autoScrollRunnable)
                 val mediaItem = mediaList[position]
+                rvAdapter.updateCurrentPlayingPosition(position)
+                Log.d("RRR2","tittle ${mediaItem.file_url}           $position")
                 if (mediaItem.event_type != "Video") {
+                    exoPlayer.pause()
+                  //  exoPlayer.clearMediaItems()
                     handler.postDelayed(autoScrollRunnable, 10000) // 30 seconds
+                }else{
+                    /*
+                     if ( exoPlayer.isPlaying) exoPlayer.pause()
+                    exoPlayer.clearMediaItems()
+                    val fileName = "${mediaItem!!._id}.${AppUittils.getFileTypeFromUrl(mediaItem!!.file_url)}"
+                    val file = AppUittils.getFileIfExists(this@MainActivity, fileName)
+
+                    val mediaItem = if (file != null) {
+                        val uri = Uri.fromFile(file)
+                        MediaItem.fromUri(uri)
+                    } else {
+                        MediaItem.fromUri(mediaItem!!.file_url)
+                    }
+
+                 //   rvAdapter.player=exoPlayer
+
+                    //   exoPlayer.setMediaSource(mediaSource)
+                    exoPlayer.setMediaItem(mediaItem)
+                    exoPlayer.prepare()
+                    exoPlayer.playWhenReady = true
+
+                     */
                 }
             }
 
@@ -432,10 +469,12 @@ class MainActivity : AppCompatActivity() {
                 when (state) {
                     ViewPager2.SCROLL_STATE_IDLE -> {
                         pageScrolling = false
+                        exoPlayer.play()
                     }
 
                     ViewPager2.SCROLL_STATE_DRAGGING -> {
                         pageScrolling = true
+                        exoPlayer.pause()
                     }
 
                     ViewPager2.SCROLL_STATE_SETTLING -> {
@@ -445,6 +484,10 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun setUi(){
+
     }
 
     private fun showToast(msg: String) {

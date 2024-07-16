@@ -10,28 +10,7 @@ import com.dev.nastv.model.TvMedia
 //(val fa:FragmentActivity, val mediaList:ArrayList<TvMedia>): FragmentStateAdapter(fa)
 
 class UiPagesAdapter(val fa:FragmentActivity, var mediaList:ArrayList<TvMedia>): FragmentStateAdapter(fa) {
-//    override fun getCount()=mediaList.size
-//
-//    override fun getItem(position: Int): Fragment {
-//
-//
-//          val mData=mediaList[position]
-//        return when (mediaList[position].mediaType) {
-//            Type.Video -> {
-//                VideoFragment.newInstance(mData)
-//            }
-//            Type.Image -> {
-//                ImageFragment.newInstance(mData)
-//            }
-//        }
-//
-//
-//
-//    }
-//fun updateData(newMediaList: List<TvMedia>) {
-//    mediaList.addAll(newMediaList)
-//    notifyDataSetChanged()
-//}
+
     fun updateData(item: List<TvMedia>) {
     Log.d("TTTT","adding item${item}")
       //  mediaList.addAll(item)

@@ -44,7 +44,7 @@ class VideoFragment : Fragment() {
     private var sourceLoaded = false
     private lateinit var exoPlayer: ExoPlayer
     private var mediaData: TvMedia? = null
-    private lateinit var dataSourceFactory: DataSource.Factory
+   // private lateinit var dataSourceFactory: DataSource.Factory
     private var _binding: FragmentVideoBinding? = null
     private val binding get() = _binding!!
 
@@ -57,21 +57,21 @@ class VideoFragment : Fragment() {
         width = mediaData?.video_width ?: 0
         height = mediaData?.video_height ?: 0
 
-        val cache = getSimpleCache(requireContext())
+//        val cache = getSimpleCache(requireContext())
+//
+//        val httpDataSourceFactory = DefaultHttpDataSource.Factory().apply {
+//            setConnectTimeoutMs(8000)
+//            setReadTimeoutMs(8000)
+//            setAllowCrossProtocolRedirects(true)
+//            setDefaultRequestProperties(mapOf("User-Agent" to "newage_tv"))
+//        }
+//
+//        val cacheDataSourceFactory = CacheDataSource.Factory()
+//            .setCache(cache)
+//            .setUpstreamDataSourceFactory(httpDataSourceFactory)
+//            .setCacheWriteDataSinkFactory(null) // Read-only cache
 
-        val httpDataSourceFactory = DefaultHttpDataSource.Factory().apply {
-            setConnectTimeoutMs(8000)
-            setReadTimeoutMs(8000)
-            setAllowCrossProtocolRedirects(true)
-            setDefaultRequestProperties(mapOf("User-Agent" to "newage_tv"))
-        }
-
-        val cacheDataSourceFactory = CacheDataSource.Factory()
-            .setCache(cache)
-            .setUpstreamDataSourceFactory(httpDataSourceFactory)
-            .setCacheWriteDataSinkFactory(null) // Read-only cache
-
-        dataSourceFactory = DefaultDataSource.Factory(requireContext(), cacheDataSourceFactory)
+        //dataSourceFactory = DefaultDataSource.Factory(requireContext(), cacheDataSourceFactory)
     }
 
     override fun onCreateView(
@@ -178,10 +178,11 @@ class VideoFragment : Fragment() {
         }
 
         showToast(requireContext(),"internal media on Create ${file?.name}")
-        val mediaSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(mediaItem)
+//        val mediaSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+//            .createMediaSource(mediaItem)
         sourceLoaded = true
-        exoPlayer.setMediaSource(mediaSource)
+     //   exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
 
         if (mediaCount == 1) {
@@ -208,10 +209,11 @@ class VideoFragment : Fragment() {
                 MediaItem.fromUri(mediaData!!.file_url)
             }
             showToast(requireContext(),"internal media onResume ${file?.name}")
-            val mediaSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(mediaItem)
+//            val mediaSource: MediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+//                .createMediaSource(mediaItem)
             sourceLoaded = true
-            exoPlayer.setMediaSource(mediaSource)
+         //   exoPlayer.setMediaSource(mediaSource)
+            exoPlayer.setMediaItem(mediaItem)
             exoPlayer.prepare()
             exoPlayer.playWhenReady = true
         }
