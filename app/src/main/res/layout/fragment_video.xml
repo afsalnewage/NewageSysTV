@@ -24,8 +24,7 @@
          app:resize_mode="fit"
         android:orientation="vertical"
         />
-<!--    app:show_buffering="when_playing"-->
-<!--    app:resize_mode="fill"-->
+
 
 
 
@@ -50,11 +49,7 @@
         app:layout_constraintWidth_default="percent" />
 
 
-<!--    <nl.dionsegijn.konfetti.xml.KonfettiView-->
-<!--        android:id="@+id/popper_view"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
-<!--    <com.smb.animatedtextview.AnimatedTextView-->
+
     <com.dev.nastv.uttils.SlidingTextView
         android:id="@+id/text_message"
         android:layout_width="0dp"
@@ -89,23 +84,6 @@
         app:lottie_rawRes="@raw/loading_anim" />
 
 
-    <!--    <com.dev.nastv.uttils.SlidingTextView-->
-<!--        android:id="@+id/text_message"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:background="@color/black"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:gravity="center_vertical"-->
-<!--        android:textColor="@color/white"-->
-<!--        android:textSize="32sp"-->
-<!--        android:paddingEnd="0dp"-->
-<!--        android:singleLine="true"-->
-<!--        android:visibility="gone"-->
-<!--        android:text="test dfdfdfdtext"-->
-
-<!--        app:layout_constraintBottom_toTopOf="@+id/guideline_horiz2"-->
-<!--        app:layout_constraintEnd_toEndOf="@+id/guideline_vet2"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/guideline_vet1"-->
-<!--        app:layout_constraintTop_toTopOf="@+id/guideline_horiz1" />-->
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_vet1"

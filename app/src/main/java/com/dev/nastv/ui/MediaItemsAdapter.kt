@@ -1,6 +1,7 @@
 package com.dev.nastv.ui
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -75,7 +76,9 @@ class MediaItemsAdapter ( var exoPlayer:ExoPlayer,
 
     inner class VideoViewHolder(val binding: VideoItemBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(media: TvMedia,position: Int) {
-
+             Log.d("TTTR","inBind ${media.file_url}   $position")
+             Log.d("TTTR","currentMediaItemPosition ${currentMediaItemPosition}   $position")
+             Log.d("TTTR","absoluteAdapterPosition ${absoluteAdapterPosition}   $position")
 
             if (currentMediaItemPosition == absoluteAdapterPosition &&currentMediaItemPosition!= RecyclerView.NO_POSITION) {
                 // Current item: Prepare and play the video

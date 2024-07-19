@@ -21,9 +21,10 @@ import java.net.URL
 class DownloadWorker (private val context: Context, workerParams: WorkerParameters) : CoroutineWorker(context, workerParams) {
 
     private val downloadManager = context.getSystemService(DownloadManager::class.java)
+    @SuppressLint("Range")
     override suspend fun doWork(): Result {
         val url = inputData.getString("url") ?: return Result.failure()
-        val name =inputData.getString(KEY_FILE_NAME) ?: return Result.failure() /* id of the video object */
+        val name =inputData.getString(KEY_FILE_NAME_REQUEST) ?: return Result.failure() /* id of the video object */
            //   Log.d("WorkInfo23","file name $name")
         val fileExtension = getFileTypeFromUrl(url)                //url.substringAfterLast('.', "")
         val fileName = "$name.$fileExtension"
@@ -52,14 +53,73 @@ class DownloadWorker (private val context: Context, workerParams: WorkerParamete
             .setDestinationUri(Uri.fromFile(file))
 
         val downloadId = downloadManager.enqueue(request)
+
+
+        /*
+
+        val downloadQuery = DownloadManager.Query().setFilterById(downloadId)
+        val cursor = downloadManager.query(downloadQuery)
+        if (cursor != null && cursor.moveToFirst()) {
+            val status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+            when (status) {
+                DownloadManager.STATUS_SUCCESSFUL -> {
+                    Log.d("Down23","STATUS_SUCCESSFUL")
+               return     Result.success(
+                        workDataOf(KEY_FILE_URL to  url)
+               )
+                }
+
+                DownloadManager.STATUS_FAILED -> {
+                    return     Result.failure()
+                    Log.d("Down23","STATUS_FAILED")
+                }
+                DownloadManager.STATUS_PENDING->{
+                    Log.d("Down23","STATUS_PENDING")
+                }
+                DownloadManager.STATUS_PAUSED->{
+                    Log.d("Down23","STATUS_PAUSED")
+                }
+                DownloadManager.ERROR_UNKNOWN->{
+                    Log.d("Down23","ERROR_UNKNOWN")
+                }
+                DownloadManager.STATUS_RUNNING->{
+                    Log.d("Down23","STATUS_RUNNING")
+                }
+                DownloadManager.ERROR_UNHANDLED_HTTP_CODE,
+                DownloadManager.ERROR_CANNOT_RESUME,
+                DownloadManager.ERROR_HTTP_DATA_ERROR->{
+                    Log.d("Down23","Erorr 222")
+                }
+
+
+                DownloadManager.ERROR_FILE_ALREADY_EXISTS->{
+                    Log.d("Down23","ERROR_FILE_ALREADY_EXISTS")
+                }
+                DownloadManager.PAUSED_WAITING_FOR_NETWORK->{
+                    Log.d("Down23","PAUSED_WAITING_FOR_NETWORK")
+                }
+                DownloadManager.PAUSED_QUEUED_FOR_WIFI->{
+                    Log.d("Down23","PAUSED_QUEUED_FOR_WIFI")
+                }
+                DownloadManager.PAUSED_UNKNOWN->{
+                    Log.d("Down23","PAUSED_UNKNOWN")
+                }
+            }
+        }
+        cursor?.close()
+
+         */
+
         return if (monitorDownload(downloadId)) {
             Result.success(
-                workDataOf(KEY_RESULT_PATH to file.absolutePath                // bitmap.allocationByteCount
+                workDataOf(KEY_FILE_URL to  url
                 )
 
             )
         } else {
-            Result.failure()
+            Result.failure(
+                workDataOf(KEY_FILE_URL to  url,KEY_FILE_NAME to fileName,KEY_FILE_NAME_REQUEST to name)
+            )
         }
 
 
@@ -103,13 +163,20 @@ class DownloadWorker (private val context: Context, workerParams: WorkerParamete
                     DownloadManager.STATUS_SUCCESSFUL -> {
                         isDownloadComplete = true
                         downloadStatus = true
+                        Log.d("Down23","STATUS_SUCCESSFUL")
                     }
-                    DownloadManager.STATUS_FAILED -> {
+                    DownloadManager.STATUS_FAILED,
+                    DownloadManager.ERROR_UNHANDLED_HTTP_CODE,
+                    DownloadManager.ERROR_CANNOT_RESUME,
+                    DownloadManager.ERROR_HTTP_DATA_ERROR-> {
+                        Log.d("Down23","STATUS_FAILED")
                         isDownloadComplete = true
                         downloadStatus = false
                     }
-                   DownloadManager.STATUS_PENDING->{
-
+                   DownloadManager.STATUS_PENDING->{}
+                   DownloadManager.ERROR_FILE_ALREADY_EXISTS->{
+                       isDownloadComplete = true
+                       downloadStatus = true
                    }
                 }
             }
@@ -130,7 +197,7 @@ class DownloadWorker (private val context: Context, workerParams: WorkerParamete
         const val KEY_FILE_URL = "key_file_url"
         const val KEY_FILE_TYPE = "key_file_type"
         const val KEY_FILE_NAME = "key_file_name"
-        const val KEY_FILE_URI = "key_file_uri"
+        const val KEY_FILE_NAME_REQUEST = "key_file_name_request"
     }
 
     /*
