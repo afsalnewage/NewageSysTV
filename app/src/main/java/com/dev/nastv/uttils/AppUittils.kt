@@ -18,7 +18,6 @@ import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
 import nl.dionsegijn.konfetti.core.emitter.Emitter
 import java.io.File
-import java.lang.Exception
 import java.net.MalformedURLException
 import java.net.URL
 import java.time.LocalDate
@@ -29,13 +28,15 @@ import java.util.concurrent.TimeUnit
 
 object AppUittils {
     @SuppressLint("UseCompatLoadingForDrawables")
-    fun loadImage(url: String?, imgView: ImageView, scaleType :ImageView.ScaleType=ImageView.ScaleType.FIT_XY) {
+    fun loadImage(
+        url: String?, imgView: ImageView, scaleType:ImageView.ScaleType=ImageView.ScaleType.FIT_XY,
+        placeholderImg: Int =R.drawable.avatar) {
 
 
         if (!url.isNullOrBlank()){
 Log.d("TTR","Url")
             Glide.with(imgView.context).load(url)
-                .placeholder(R.drawable.avatar)
+                .placeholder(placeholderImg)
                 .into(imgView)
 
         } else {

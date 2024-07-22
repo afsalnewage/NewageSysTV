@@ -48,8 +48,6 @@ import com.dev.nastv.uttils.AppUittils
 import com.dev.nastv.uttils.AppUittils.anniversary_party
 import com.dev.nastv.uttils.AppUittils.applyFadeInAnimation
 import com.dev.nastv.uttils.AppUittils.applySlideInAnimation
-import com.dev.nastv.uttils.AppUittils.convertDurationToMillis
-import com.dev.nastv.uttils.AppUittils.getFilesInDirectory
 import com.dev.nastv.uttils.AppUittils.loadImage
 import com.dev.nastv.uttils.AppUittils.party
 import com.dev.nastv.uttils.ConnectivityObserver
@@ -70,8 +68,6 @@ import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.Objects
 import java.util.UUID
 import javax.inject.Inject
 
@@ -523,9 +519,12 @@ class MainActivity : AppCompatActivity() {
         val downloaded = viewModel.initlMediaList.filter {
             it.file_url == url
         }
-        mediaList.add(downloaded.first()
-        )
-        showToast("Adding items $url")
+        mediaList.add(downloaded.first())
+//        if (!mediaList.contains(downloaded.first())){
+//            mediaList.add(downloaded.first())
+//        }
+
+      //  showToast("Adding items $url")
         Log.d("pppR","new items $downloaded")
         Log.d("pppR","mediaList ${mediaList.size}")
        // mediaList.shuffle()
@@ -780,7 +779,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-                loadImage(media.file_url, binding.customImage)
+                loadImage(media.file_url, binding.customImage, placeholderImg = R.drawable.splash_tv)
 
                 previousView = binding.customFrame
             }
@@ -834,7 +833,7 @@ class MainActivity : AppCompatActivity() {
                 loadImage(
                     media.file_url,
                     binding.imageBg,
-                    scaleType = ImageView.ScaleType.CENTER_INSIDE
+                        scaleType = ImageView.ScaleType.CENTER_INSIDE
                 )
                 binding.popperViewBirthDay.start(party = party)
 
