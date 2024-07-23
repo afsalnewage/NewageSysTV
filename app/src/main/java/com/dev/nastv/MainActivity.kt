@@ -25,6 +25,7 @@ import android.view.animation.AnimationUtils
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.buildSpannedString
 import androidx.lifecycle.Observer
@@ -32,12 +33,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkContinuation
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.work.*
 import com.dev.nastv.connection.SocketManager
 import com.dev.nastv.databinding.ActivityMainBinding
 import com.dev.nastv.model.TvMedia
@@ -57,18 +53,15 @@ import com.dev.nastv.worker.DownloadWorker
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_NAME
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_NAME_REQUEST
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_URL
-import com.google.android.exoplayer2.DefaultLoadControl
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.PlaybackException
-import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import dagger.hilt.android.AndroidEntryPoint
 import io.socket.client.Socket
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.UUID
+import java.util.*
 import javax.inject.Inject
 
 
@@ -78,6 +71,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var previousView: View
 
+    private var alertDialog: AlertDialog? = null
     private val imageDuration=10000L
     private val birthdayMusic = R.raw.happy_birthday
     private val newJoineeMusic = R.raw.whip_afro_dancehall
@@ -165,115 +159,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    fun scheduleDownloads1(dataList: List<TvMedia>) {
-        val downloadingFiles =
-            sharedPreferences.getStringSet("valid_file_names", emptySet()) ?: emptySet()
-        val workManager = WorkManager.getInstance(this)
-        var workContinuation: WorkContinuation? = null
-        val validFileNames = mutableListOf<String>()
-        val workRequests = mutableListOf<OneTimeWorkRequest>()
-      //  val downloadingItems = mutableListOf<String>()
-        val finalList = ArrayList<TvMedia>()
-        for (data in dataList) {
-            if (data.event_type == "Video") {
 
-
-
-
-                val fileName = "${data._id}.${AppUittils.getFileTypeFromUrl(data.file_url)}"
-                val file = AppUittils.getFileIfExists(this, fileName)
-                validFileNames.add(data.file_url)
-              //  downloadingItems.add(data._id)file != null&&file.isFile !downloadingFiles.contains(data.file_url)
-                if (file!=null &&file.exists()) {//&& !downloadingFiles.contains(fileName)
-                    Log.d("RyR3", "File already exists: $fileName")
-                    // viewModel.updateFinalList(data)
-                    finalList.add(data)
-                    continue
-                } else {
-                    val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-                        .setInputData(
-                            workDataOf(
-                                "url" to data.file_url,
-                                KEY_FILE_NAME to data._id
-                            )
-                        ).build()
-                    workRequests.add(downloadWorkRequest)
-
-                    //viewModel.addItemToDownloading(data._id)
-
-                    if (workContinuation == null) {
-                        workContinuation = workManager.beginWith(downloadWorkRequest)
-                    } else {
-                        workContinuation = workContinuation.then(downloadWorkRequest)
-                    }
-//
-//                    if (workRequests.isNotEmpty()) {
-//                        var continuation = workManager.beginWith(workRequests.first())
-//
-//                        for (i in 1 until workRequests.size) {
-//                            continuation = continuation.then(workRequests[i])
-//                        }
-//                        continuation.enqueue()
-//                    }
-
-
-                }
-            } else {
-                //viewModel.updateFinalList(data)
-                finalList.add(data)
-            }
-
-//            if (filteredList.isNotEmpty()) {
-//                viewModel.updateFinalList(filteredList)
-//            } else {
-//                viewModel.updateFinalList(finalList)
-//            }
-
-        }
-        Log.d("RyR3","finalList23 ${finalList.size}")
-        //viewModel.updateFinalList(finalList)
-              mediaList.clear()
-             mediaList.addAll(finalList)
-
-      //  viewModel.updateIndex(0)
-
-        for (i in finalList){
-            Log.d("RyR3","for (i in finalList) ${i.event_type}   ${i.file_url}")
-        }
-
-//        if (workRequests.isNotEmpty()) {
-//            workManager.enqueue(workRequests)
-//            val workIds = workRequests.map { it.id }
-//            viewModel.updateWorkIds(workIds)
-//        }
-
-        if (workRequests.isNotEmpty()) {
-            Log.d("RyR3","workRequests ${workRequests}")
-            workManager.enqueue(workRequests)
-            val workIds = workRequests.map { it.id }
-            // viewModel.updateWorkIds(workIds)
-            observeWorkStatus(workIds)
-            // Save workIds to SharedPreferences
-            val workIdStrings = workIds.map { it.toString() }.toSet()
-            val sharedPreferences = getSharedPreferences("work_ids", Context.MODE_PRIVATE)
-            with(sharedPreferences.edit()) {
-                putStringSet("work_ids_set", workIdStrings)
-                putStringSet("valid_file_names", validFileNames.toSet())
-                apply()
-            }
-
-        } else {
-            checkWorkStatusOnAppStart()
-
-        }
-        workContinuation?.enqueue()
-
-
-        //checkWorkStatusOnAppStart()
-        CoroutineScope(Dispatchers.IO).launch {
-          viewModel.deleteUnmatchedFiles(this@MainActivity, validFileNames)
-        }
-    }
     @RequiresApi(Build.VERSION_CODES.O)
     fun scheduleDownloads(dataList: List<TvMedia>) {
         val finalList = ArrayList<TvMedia>()
@@ -289,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                 val file = AppUittils.getFileIfExists(this, fileName)
                 Log.d("Index23"," file exists  ${file?.exists()}")
                 if (file!=null &&file.exists()){
-                    validFileNames.add(data.file_url)
+                    validFileNames.add(fileName)
                    finalList.add(data)
                 }else{
                     viewModel.videoList.add(data)
@@ -325,6 +211,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun showBackupDialog(context: Context) {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Backup in Progress")
+        builder.setMessage("Data backing up, please wait...")
+        builder.setCancelable(false)
+        alertDialog = builder.create()
+        alertDialog?.show()
+    }
+    private fun dismissBackupDialog() {
+        alertDialog?.takeIf { it.isShowing }?.dismiss()
+    }
     private fun downloadSingleItem(data: TvMedia){
         val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setInputData(
@@ -520,11 +417,14 @@ class MainActivity : AppCompatActivity() {
             it.file_url == url
         }
         mediaList.add(downloaded.first())
-//        if (!mediaList.contains(downloaded.first())){
-//            mediaList.add(downloaded.first())
-//        }
+        if (mediaList.size==1){
+            binding.animation.pauseAnimation()
+            binding.animation.visibility = View.GONE
+            dismissBackupDialog()
+              playMedia(0)
+        }
 
-      //  showToast("Adding items $url")
+     //  showToast("Adding items $url")
         Log.d("pppR","new items $downloaded")
         Log.d("pppR","mediaList ${mediaList.size}")
        // mediaList.shuffle()
@@ -555,6 +455,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
+
 
         previousView = binding.startView
         exoPlayer = ExoPlayer.Builder(this).build()
@@ -655,13 +556,16 @@ class MainActivity : AppCompatActivity() {
 
         socket.on(Socket.EVENT_CONNECT) {
             Log.d("Socket", "Connected")
+//            runOnUiThread {
+//                showToast("Socket connected")
+//            }
 
         }
         socket.on("Refresh") { args ->
 
 
             runOnUiThread {
-
+                //showToast("Socket trigerd")
 //                binding.animation.visibility = View.VISIBLE
 //                binding.animation.playAnimation()
                 viewModel.getMediaItems()
@@ -706,6 +610,10 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun playMedia(index: Int) {
         if (mediaList.isEmpty()) {
+            showBackupDialog(this)
+            binding.animation.visibility = View.VISIBLE
+            binding.animation.playAnimation()
+            binding.animationView.playAnimation()
             return
         }
 
@@ -918,16 +826,23 @@ class MainActivity : AppCompatActivity() {
                     PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED,
                     PlaybackException.ERROR_CODE_VIDEO_FRAME_PROCESSING_FAILED,
                     PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
+                    PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED,
                     -> {
 
                         //commented for tempprary
 
-                        val newIndex = (currentMediaIndex + 1) % mediaList.size
-                        playMedia(newIndex)
+                     //   val newIndex = (currentMediaIndex + 1) % mediaList.size
+                        //for replay
+                        playMedia(currentMediaIndex)
 //                        val currentMediaIndex = viewModel.mediaIndex.value ?: 0
 //                        viewModel.updateIndex((currentMediaIndex + 1) % mediaList.size)
 
                     }
+                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND->{
+                        playMedia(currentMediaIndex)
+
+                    }
+
 
                     PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
                     PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> {
@@ -1008,7 +923,8 @@ class MainActivity : AppCompatActivity() {
 //                    playMedia(mediaList.size-1)
 //                }
                 if (currentMediaIndex==0){
-                    playMedia(mediaList.size-1)
+                    currentMediaIndex=mediaList.size-1
+                    playMedia(currentMediaIndex)
                 }
                 else{
                     currentMediaIndex=(currentMediaIndex - 1) % mediaList.size

@@ -1,5 +1,6 @@
 package com.dev.nastv.network
 import android.content.Intent
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.dev.nastv.di.NetworkModule
 import com.dev.nastv.uttils.AppConstant
@@ -38,6 +39,7 @@ class AuthorizationInterceptor  :Interceptor {
                 try {
                     val auth =
                         JSONObject(response.body?.string()!!).getJSONObject("data").getString("token")
+                    Log.d("Token23","Token $auth")
                     SessionUtils.saveAuthToken(auth)
                     response.close()
                     val secondRequest = firstRequest.newBuilder().removeHeader("Authorization")
