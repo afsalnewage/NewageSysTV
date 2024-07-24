@@ -524,10 +524,24 @@ class MainActivity : AppCompatActivity() {
 
 
                          if (it.data.data!!.tv_apps.isNotEmpty()){
+                             binding.noDatScreen.visibility=View.GONE
                              viewModel.initlMediaList = it.data.data!!.tv_apps
                              scheduleDownloads(it.data.data!!.tv_apps)
                          }else{
-                             showCustomAlertDialog()
+                             //showCustomAlertDialog()
+                             binding.noDatScreen.visibility=View.VISIBLE
+                             handler.removeCallbacks(autoScrollRunnable)
+                              mediaList.clear()
+                             if (exoPlayer.isPlaying){
+                                 exoPlayer.pause()
+                                 exoPlayer.stop()
+                                 exoPlayer.clearMediaItems()
+                                 binding.videoScreen.visibility=View.GONE
+                             }
+                             binding.anniversaryFrame.visibility=View.GONE
+                             binding.birthdayFrame.visibility=View.GONE
+                             binding.newjoineeFrame.visibility=View.GONE
+                             binding.customFrame.visibility=View.GONE
                          }
 //
 
@@ -596,6 +610,12 @@ class MainActivity : AppCompatActivity() {
 
         alertDialog.show()
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        this.finish()
+    }
+
     override fun onPause() {
         super.onPause()
         exoPlayer.pause()
@@ -757,7 +777,7 @@ class MainActivity : AppCompatActivity() {
                 loadImage(
                     media.file_url,
                     binding.imageBg,
-                        scaleType = ImageView.ScaleType.CENTER_INSIDE
+                        scaleType = ImageView.ScaleType.CENTER_CROP
                 )
                 binding.popperViewBirthDay.start(party = party)
 
@@ -914,7 +934,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         //binding.mainPager.requestFocus()
-        if (isFromBackgruond){
+        if (isFromBackgruond&&mediaList.isNotEmpty()){
             playMedia(0)
             isFromBackgruond=false
         }

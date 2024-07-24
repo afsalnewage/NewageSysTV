@@ -7,40 +7,6 @@
     android:background="@color/black"
     tools:context=".MainActivity">
 
-<!--    <com.dev.nastv.uttils.CustomViewPager-->
-
-<!--      <androidx.viewpager2.widget.ViewPager2-->
-
-
-
-<!--        android:id="@+id/main_pager"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        android:focusable="true"-->
-<!--          android:visibility="gone"-->
-<!--        android:focusableInTouchMode="true"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" >-->
-
-
-
-<!--      </androidx.viewpager2.widget.ViewPager2>-->
-
-
-<!--    <androidx.recyclerview.widget.RecyclerView-->
-<!--        android:id="@+id/main_rv"-->
-<!--        android:focusable="true"-->
-<!--        android:focusableInTouchMode="true"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent"-->
-<!--        android:orientation="horizontal"/>-->
-
 
     <ImageView
         android:layout_width="match_parent"
@@ -61,7 +27,42 @@
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/loading_anim" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/no_dat_screen"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
+
+        <ImageView
+            android:id="@+id/dialogIcon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="Smiley Icon"
+
+            android:scaleType="fitCenter"
+            android:src="@drawable/no_data_icon"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <TextView
+            android:id="@+id/dialogTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="Sorry, no content to show"
+            android:textColor="@color/black"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 <!--    video screen //////////////////////////////////////-->
@@ -367,7 +368,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.40" />
+            app:layout_constraintGuide_percent="0.42" />
 
         <TextView
             android:id="@+id/tittle_top"

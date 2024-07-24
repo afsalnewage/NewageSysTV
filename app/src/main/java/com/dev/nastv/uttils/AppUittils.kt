@@ -42,7 +42,7 @@ Log.d("TTR","Url")
         } else {
             Log.d("TTR","Url dummy")
              imgView.scaleType=scaleType
-            Glide.with(imgView.context).load(imgView.context.getDrawable(R.drawable.avatar))
+            Glide.with(imgView.context).load(imgView.context.getDrawable(R.drawable.no_user))
                 .fitCenter().placeholder(R.color.green).into(imgView)
         }
 
