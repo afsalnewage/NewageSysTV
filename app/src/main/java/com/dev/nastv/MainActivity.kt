@@ -2,6 +2,7 @@ package com.dev.nastv
 
 //import com.google.firebase.messaging.FirebaseMessaging
 
+//import android.R
 import android.animation.Animator
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
@@ -57,7 +58,6 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import dagger.hilt.android.AndroidEntryPoint
 import io.socket.client.Socket
-
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -523,13 +523,16 @@ class MainActivity : AppCompatActivity() {
                         binding.animation.visibility = View.GONE
 
 
-//                        mediaList.clear()
-//                        mediaList.addAll(it.data.data!!.tv_apps)
+                         if (it.data.data!!.tv_apps.isNotEmpty()){
+                             viewModel.initlMediaList = it.data.data!!.tv_apps
+                             scheduleDownloads(it.data.data!!.tv_apps)
+                         }else{
+                             showCustomAlertDialog()
+                         }
 //
 
 //                        mediaList.addAll(it.data.data!!.tv_apps)
-                        viewModel.initlMediaList = it.data.data!!.tv_apps
-                        scheduleDownloads(it.data.data!!.tv_apps)
+
                         //checkAndDownload(it.data.data!!.tv_apps)
 
 
@@ -580,6 +583,19 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun showCustomAlertDialog() {
+
+        val inflater = layoutInflater
+        val dialogView: View = inflater.inflate(R.layout.no_items_lay , null)
+
+        // Build the AlertDialog
+        val builder = AlertDialog.Builder(this)
+        builder.setView(dialogView)
+        builder.setCancelable(true)
+        val alertDialog = builder.create()
+
+        alertDialog.show()
+    }
     override fun onPause() {
         super.onPause()
         exoPlayer.pause()
