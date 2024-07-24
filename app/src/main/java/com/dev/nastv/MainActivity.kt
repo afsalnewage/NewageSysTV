@@ -72,8 +72,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previousView: View
 
     private var alertDialog: AlertDialog? = null
-    private val imageDuration=10000L
-    private val birthdayMusic = R.raw.happy_birthday
+    private val imageDuration=30000L
+    private val birthdayMusic = R.raw.happy_birthday_acoustic                   //happy_birthday
     private val newJoineeMusic = R.raw.whip_afro_dancehall
     private val anniversaryMusic = R.raw.infinte_melodic_beat
     private val customMusic = R.raw.sunset_piano

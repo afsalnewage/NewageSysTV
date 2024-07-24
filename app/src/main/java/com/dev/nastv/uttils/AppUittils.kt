@@ -169,7 +169,7 @@ Log.d("TTR","Url")
         damping = 0.9f,
         spread = 360,
         colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-        emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(600),
+        emitter = Emitter(duration = 30000, TimeUnit.MILLISECONDS).max(900),
         position = Position.Relative(0.1, 0.1)
     )
 
@@ -179,7 +179,7 @@ Log.d("TTR","Url")
         damping = 0.9f,
         spread = 360,
         colors = listOf(0xfce23a, 0xff706d, 0xf7906d, 0xb044def),
-        emitter = Emitter(duration = 10000, TimeUnit.MILLISECONDS).max(600),
+        emitter = Emitter(duration = 30000, TimeUnit.MILLISECONDS).max(900),
         position = Position.Relative(0.1, 0.1)
     )
 
