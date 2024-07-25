@@ -25,6 +25,7 @@ class AuthorizationInterceptor  :Interceptor {
                     .build()
         }
         var response = chain.proceed(firstRequest)
+        Log.d("Respons12","respnos ${response.code}")
         if (response.code == 401 ) {//&& SessionUtils.hasSession()
             response.close()
             val map = HashMap<String, Any?>()

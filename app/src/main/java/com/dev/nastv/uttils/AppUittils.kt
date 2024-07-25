@@ -31,7 +31,7 @@ object AppUittils {
     fun loadImage(
         url: String?, imgView: ImageView, scaleType:ImageView.ScaleType=ImageView.ScaleType.FIT_XY,
         placeholderImg: Int =R.drawable.avatar) {
-
+       // imgView.scaleType=scaleType
 
         if (!url.isNullOrBlank()){
 Log.d("TTR","Url")

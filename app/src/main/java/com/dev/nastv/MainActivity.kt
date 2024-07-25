@@ -723,7 +723,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-                loadImage(media.file_url, binding.customImage, placeholderImg = R.drawable.splash_tv)
+                loadImage(media.file_url, binding.customImage, placeholderImg = R.drawable.splash_tv, scaleType =ImageView.ScaleType.FIT_XY)
 
                 previousView = binding.customFrame
             }
@@ -746,6 +746,7 @@ class MainActivity : AppCompatActivity() {
                 binding.anniversaryProfileDesignation.text = media.user_position
                 binding.anniversaryTittle.text =
                     setAnniversaryYearText(media.anniversary_year ?: 0)
+                binding.anniversaryDate.text= AppUittils.formatDateString(media.event_date)
                 binding.popperViewAnniversary.start(party = anniversary_party)
 
                 previousView = binding.anniversaryFrame
@@ -777,7 +778,7 @@ class MainActivity : AppCompatActivity() {
                 loadImage(
                     media.file_url,
                     binding.imageBg,
-                        scaleType = ImageView.ScaleType.CENTER_CROP
+                        scaleType = ImageView.ScaleType.FIT_XY
                 )
                 binding.popperViewBirthDay.start(party = party)
 

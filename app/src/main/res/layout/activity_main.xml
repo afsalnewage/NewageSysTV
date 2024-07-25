@@ -79,7 +79,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:visibility="visible"
-            android:background="@android:color/black"
+            android:background="@drawable/colorful2"
             app:layout_constraintBottom_toTopOf="@+id/guideline_horiz21"
             app:layout_constraintEnd_toStartOf="@id/guideline_vet2"
             app:layout_constraintHorizontal_bias="0.5"
@@ -274,6 +274,7 @@
             app:layout_constraintTop_toBottomOf="@+id/tittle_top"
             app:layout_constraintVertical_chainStyle="packed" />
 
+
         <TextView
             android:id="@+id/anniversary_profile_name"
             android:layout_width="0dp"
@@ -294,6 +295,7 @@
             android:id="@+id/anniversary_profile_designation"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/sanista_regular_new"
             android:gravity="center"
             android:lineSpacingExtra="0dp"
@@ -308,20 +310,36 @@
             app:layout_constraintTop_toBottomOf="@+id/anniversary_profile_name" />
 
         <TextView
+            android:id="@+id/anniversary_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/inter"
+            android:text="10 May 2024"
+            android:textColor="@color/white"
+            android:textSize="19dp"
+
+            android:textStyle="normal"
+            app:layout_constraintEnd_toEndOf="@+id/anniversary_frame"
+            app:layout_constraintHorizontal_bias="0.5"
+
+            app:layout_constraintStart_toStartOf="@+id/guideline_vert2"
+            app:layout_constraintTop_toBottomOf="@+id/anniversary_profile_designation" />
+
+        <TextView
             android:id="@+id/anniversary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="45dp"
             android:fontFamily="@font/sanista_regular_new"
             android:maxLines="2"
             android:text="@string/anniversary_wish"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/guideline_botom1"
             app:layout_constraintEnd_toEndOf="@+id/anniversary_frame"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="@+id/guideline_vert2" />
+            app:layout_constraintStart_toStartOf="@+id/guideline_vert2"
+            app:layout_constraintTop_toBottomOf="@+id/guideline_botom12" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_top1"
@@ -341,20 +359,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.5" />
+            app:layout_constraintGuide_percent="0.47" />
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_botom12"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.80" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_botom1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.89" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_vert1"
@@ -837,7 +848,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <ImageView
-
+            android:background="@drawable/poster_bg"
             android:id="@+id/custom_image"
             android:layout_width="0dp"
             android:layout_height="0dp"
