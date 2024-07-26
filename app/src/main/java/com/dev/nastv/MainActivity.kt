@@ -29,7 +29,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.text.buildSpannedString
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
@@ -61,6 +60,7 @@ import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
@@ -70,8 +70,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var previousView: View
-
-    private var alertDialog: AlertDialog? = null
+  var alertDialog: AlertDialog? = null
     private val imageDuration=30000L
     private val birthdayMusic = R.raw.happy_birthday_acoustic                   //happy_birthday
     private val newJoineeMusic = R.raw.whip_afro_dancehall
@@ -114,47 +113,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun  checkAndDownload(dataList: List<TvMedia>){
-        val workManager = WorkManager.getInstance(this)
-        val workRequests = mutableListOf<OneTimeWorkRequest>()
-        val finalList = ArrayList<TvMedia>()
-        for (data in dataList) {
-            if (data.event_type == "Video") {
 
-                val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-                    .setInputData(
-                        workDataOf(
-                            "url" to data.file_url,
-                            KEY_FILE_NAME to data._id
-                        )
-                    ).build()
-                workRequests.add(downloadWorkRequest)
-
-
-            } else {
-                //viewModel.updateFinalList(data)
-                finalList.add(data)
-            }
-        }
-
-            if (workRequests.isNotEmpty()) {
-                workManager.enqueue(workRequests)
-                val workIds = workRequests.map { it.id }
-                observeWorkStatus(workIds)
-                var continuation = workManager.beginWith(workRequests.first())
-
-                for (i in 1 until workRequests.size) {
-                    continuation = continuation.then(workRequests[i])
-                }
-
-                continuation.enqueue()
-            }
-
-            mediaList.clear()
-            mediaList.addAll(finalList)
-
-           // viewModel.updateIndex(0)
-    }
 
 
 
@@ -560,10 +519,10 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        viewModel.mediaIndex.observe(this, Observer {
-
-            //playMedia(it)
-        })
+//        viewModel.mediaIndex.observe(this, Observer {
+//
+//            //playMedia(it)
+//        })
 
 
 
@@ -578,11 +537,24 @@ class MainActivity : AppCompatActivity() {
 //            }
 
         }
+        socket.on(Socket.EVENT_CONNECT_ERROR) { args ->
+
+            Log.e("Socket", " ${args.joinToString()}")
+//            runOnUiThread {
+//                showToast(" ${args.joinToString()}")
+//            }
+        }
+        socket.on(Socket.EVENT_DISCONNECT){
+
+//            runOnUiThread {
+//                showToast("Socket dis-connected")
+//            }
+        }
         socket.on("Refresh") { args ->
 
 
             runOnUiThread {
-                //showToast("Socket trigerd")
+                showToast("Media list updated.")
 //                binding.animation.visibility = View.VISIBLE
 //                binding.animation.playAnimation()
                 viewModel.getMediaItems()
@@ -597,19 +569,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun showCustomAlertDialog() {
 
-        val inflater = layoutInflater
-        val dialogView: View = inflater.inflate(R.layout.no_items_lay , null)
-
-        // Build the AlertDialog
-        val builder = AlertDialog.Builder(this)
-        builder.setView(dialogView)
-        builder.setCancelable(true)
-        val alertDialog = builder.create()
-
-        alertDialog.show()
-    }
 
     override fun onBackPressed() {
         super.onBackPressed()
@@ -730,6 +690,7 @@ class MainActivity : AppCompatActivity() {
 
             "Anniversary" -> {
                 animateViews(showView = binding.anniversaryFrame, hideView = previousView)
+                binding.popperViewAnniversary.start(party = anniversary_party)
                 handler.postDelayed(autoScrollRunnable, imageDuration)
                 if (exoPlayer.isPlaying) {
                     exoPlayer.pause()
@@ -747,7 +708,7 @@ class MainActivity : AppCompatActivity() {
                 binding.anniversaryTittle.text =
                     setAnniversaryYearText(media.anniversary_year ?: 0)
                 binding.anniversaryDate.text= AppUittils.formatDateString(media.event_date)
-                binding.popperViewAnniversary.start(party = anniversary_party)
+
 
                 previousView = binding.anniversaryFrame
 
@@ -773,7 +734,7 @@ class MainActivity : AppCompatActivity() {
 
                 binding.birthdayPersonName.text = media.title
 
-                binding.birthdayDat.text = AppUittils.formatDateString(media.end_date)
+                binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
                 binding.imgBanner.visibility = View.VISIBLE
                 loadImage(
                     media.file_url,
@@ -1084,9 +1045,7 @@ class MainActivity : AppCompatActivity() {
         return buildedText
     }
 
-    private fun setLayouts() {
 
-    }
 
     fun ViewPager2.setCurrentItem(
         item: Int,

@@ -21,7 +21,7 @@ class AuthorizationInterceptor  :Interceptor {
         if (!SessionUtils.authToken.isNullOrEmpty()) {
             firstRequest =
                 chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer " + SessionUtils.authToken!!)
+                    .addHeader("Authorization", "Bearer " + AppConstant.DEFAULT_AUTH)// SessionUtils.authToken!!)
                     .build()
         }
         var response = chain.proceed(firstRequest)

@@ -30,7 +30,7 @@ object AppUittils {
     @SuppressLint("UseCompatLoadingForDrawables")
     fun loadImage(
         url: String?, imgView: ImageView, scaleType:ImageView.ScaleType=ImageView.ScaleType.FIT_XY,
-        placeholderImg: Int =R.drawable.avatar) {
+        placeholderImg: Int =R.drawable.no_user) {
        // imgView.scaleType=scaleType
 
         if (!url.isNullOrBlank()){
@@ -87,7 +87,7 @@ Log.d("TTR","Url")
 
         val inputFormatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX", Locale.ENGLISH)
-        val outputFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH)
+        val outputFormatter = DateTimeFormatter.ofPattern("MMMM dd, yyyy", Locale.ENGLISH)
 
         // Parse the input date string to a ZonedDateTime object
         val date = ZonedDateTime.parse(inputDate, inputFormatter)
@@ -178,7 +178,7 @@ Log.d("TTR","Url")
         maxSpeed = 30f,
         damping = 0.9f,
         spread = 360,
-        colors = listOf(0xfce23a, 0xff706d, 0xf7906d, 0xb044def),
+        colors =   listOf(0xFFDF00, 0x000FF, 0x008000,0xfce45a) ,                 //listOf(0xfce23a, 0xff706d, 0xf7906d, 0xb044def),
         emitter = Emitter(duration = 30000, TimeUnit.MILLISECONDS).max(900),
         position = Position.Relative(0.1, 0.1)
     )

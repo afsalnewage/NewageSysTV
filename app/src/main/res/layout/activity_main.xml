@@ -848,12 +848,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <ImageView
-            android:background="@drawable/poster_bg"
+            android:background="@drawable/colorful1"
             android:id="@+id/custom_image"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:adjustViewBounds="true"
-            android:scaleType="fitXY"
             android:src="@drawable/man"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="@+id/guideline2"

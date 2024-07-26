@@ -108,7 +108,11 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
-    implementation ("io.socket:socket.io-client:2.0.0")
+  //  implementation ("io.socket:socket.io-client:2.0.0")
+
+    implementation("io.socket:socket.io-client:2.0.0") {
+        exclude(group = "org.json", module = "json")
+    }
 
     implementation ("com.github.SMehranB:AnimatedTextView:1.1.0")
 
