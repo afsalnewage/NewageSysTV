@@ -854,6 +854,7 @@
             android:layout_height="0dp"
             android:adjustViewBounds="true"
             android:src="@drawable/man"
+
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="@+id/guideline2"
             app:layout_constraintEnd_toEndOf="@+id/custom_frame"
@@ -866,7 +867,7 @@
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
             android:scaleType="fitXY"
-            android:src="@drawable/custom_image"
+            android:src="@drawable/tv_border"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="@+id/custom_frame"
             app:layout_constraintEnd_toEndOf="@+id/custom_frame"
@@ -878,7 +879,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.91" />
+            app:layout_constraintGuide_percent="0.98" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

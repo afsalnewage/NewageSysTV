@@ -1,4 +1,5 @@
 package com.dev.nastv.network
+
 import android.content.Intent
 import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -12,47 +13,63 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.util.HashMap
 
-
-class AuthorizationInterceptor  :Interceptor {
+class AuthorizationInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         var firstRequest = chain.request()
 
+        // Adding the Authorization header if the token is not null or empty
         if (!SessionUtils.authToken.isNullOrEmpty()) {
-            firstRequest =
-                chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer " + AppConstant.DEFAULT_AUTH)// SessionUtils.authToken!!)
-                    .build()
+            firstRequest = firstRequest.newBuilder()
+                .addHeader("Authorization", "Bearer " + SessionUtils.authToken!!).build()
         }
+
+        // Proceeding with the first request
         var response = chain.proceed(firstRequest)
-        Log.d("Respons12","respnos ${response.code}")
-        if (response.code == 401 ) {//&& SessionUtils.hasSession()
-            response.close()
+        Log.d("Response", "Response code: ${response.code}")
+
+        // If the response code is 401 (Unauthorized)
+        if (response.code == 401) {
+            response.close()  // Close the response
+
+            // Creating a map for the token and refresh token
             val map = HashMap<String, Any?>()
             map["token"] = SessionUtils.authToken!!
             map["refresh_token"] = SessionUtils.refreshToken!!
-            val authRequest = firstRequest.newBuilder()
-                .post(RequestBodyUtil.getRequestBodyMap(map))
-                .url("$BASE_URL/auth/token").build()  // generate new token url
-            response = chain.proceed(authRequest)
 
-            if (response.isSuccessful) {
+            // Creating the request to get a new token
+            val authRequest = firstRequest.newBuilder().post(RequestBodyUtil.getRequestBodyMap(map))
+                .url("$BASE_URL/auth/token").build()
+
+            // Proceeding with the auth request
+            val authResponse = chain.proceed(authRequest)
+
+            if (authResponse.isSuccessful) {
                 try {
+                    // Extracting the new token from the response
+                    val authResponseBody = authResponse.body?.string()
                     val auth =
-                        JSONObject(response.body?.string()!!).getJSONObject("data").getString("token")
-                    Log.d("Token23","Token $auth")
+                        JSONObject(authResponseBody!!).getJSONObject("data").getString("token")
+                    Log.d("Response", "New Token: $auth")
+
+                    // Saving the new token
                     SessionUtils.saveAuthToken(auth)
-                    response.close()
+                    authResponse.close()
+
+                    // Creating a new request with the new token
                     val secondRequest = firstRequest.newBuilder().removeHeader("Authorization")
-                        .addHeader("Authorization", "Bearer $auth")
-                        .method(firstRequest.method, firstRequest.body).build()
+                        .addHeader("Authorization", "Bearer $auth").build()
+
+                    // Proceeding with the second request
                     response = chain.proceed(secondRequest)
 
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
 
-            } else if (response.code == 401) {
+            } else if (authResponse.code == 401) {
+                // Handle the case where the refresh token also fails
+                // You can log out the user or take any other appropriate action
 //                val intent = Intent(Intent.ACTION_MAIN)
 //                intent.putExtra(INTENT_BROADCAST, AppConstants.BC_AUTH_LOGOUT)
 //                LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
@@ -63,49 +80,3 @@ class AuthorizationInterceptor  :Interceptor {
     }
 }
 
-
-//        override fun intercept(chain: Interceptor.Chain): Response {
-//            var firstRequest = chain.request()
-//
-//
-//            if (!SessionUtils.authToken.isNullOrEmpty()) {
-//                firstRequest =
-//                    chain.request().newBuilder()
-//                        .addHeader("Authorization", "Bearer " + SessionUtils.authToken!!)
-//                        .build()
-//            }
-//            var response = chain.proceed(firstRequest)
-//            val authentication = response.header("Authentication")
-//
-//            if (authentication != null && authentication.equals("false", true)
-//                && SessionUtils.refreshToken!!.isNotEmpty()
-//            ) {
-//
-//                val builder = firstRequest.newBuilder()
-//                    .addHeader("Authorization","Bearer " + SessionUtils.authToken!!)
-//                    .addHeader("refresh-token", SessionUtils.refreshToken!!)
-//                    .method(firstRequest.method, firstRequest.body)
-//
-//                val secondRequest = builder.build()
-//                response.close()
-//                response = chain.proceed(secondRequest)
-//            } else if (response.code == 400 || response.code >= 500) {
-//    //            //This for handling server issues
-//    //            val localBroadcastManager = LocalBroadcastManager.getInstance(context)
-//    //            val localIntent = Intent("custom-event-name").putExtra("server_down", true)
-//    //            localBroadcastManager.sendBroadcast(localIntent)
-//            }
-//
-//            val authToken = response.header("Authorization")
-//            val refreshToken = response.header("refresh-token")
-//
-//
-//            if (!authToken.isNullOrEmpty() && !refreshToken.isNullOrEmpty()) {
-//
-//                SessionUtils.saveToken(authToken, refreshToken)
-//            }
-//            return response
-//        }
-//
-//
-//}

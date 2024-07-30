@@ -13,7 +13,8 @@ object SocketManager {
     fun initialize(token: String) {
         val options = IO.Options().apply {
            query = "token=$token"
-            transports= arrayOf("websocket")
+           transports= arrayOf("websocket")
+
             //this.extraHeaders=mapOf("Authorization" to listOf(token)) //token
         }
 
