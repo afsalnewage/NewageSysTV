@@ -130,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             if (data.event_type == "Video") {
 
 
+
                 val fileName = "${data._id}.${AppUittils.getFileTypeFromUrl(data.file_url)}"
                 val file = AppUittils.getFileIfExists(this, fileName)
                 Log.d("Index23"," file exists  ${file?.exists()}")
@@ -146,10 +147,12 @@ class MainActivity : AppCompatActivity() {
 
         }
         mediaList.clear()
-        mediaList.addAll(finalList)
-       // mediaList.addAll(videoList)
-        Log.d("Index23","final list ${mediaList.size}")
-       // viewModel.updateIndex(0)
+        if (viewModel.videoList.isNotEmpty()){
+            mediaList.addAll(finalList)
+        }else{
+            mediaList.addAll(viewModel.initlMediaList)
+        }
+
         playMedia(0)
 
         for (data in viewModel.videoList){
@@ -213,8 +216,24 @@ class MainActivity : AppCompatActivity() {
 
                             if (url != null) {
 
+                                if (viewModel.videoList.isEmpty()){
 
-                                updateMediaList(url)
+                                    if (exoPlayer.isPlaying){
+                                        exoPlayer.pause()
+                                        exoPlayer.stop()
+                                        exoPlayer.clearMediaItems()
+                                    }
+                                    showToast("Playlist updating.....")
+                                    mediaList.clear()
+                                    mediaList.addAll(viewModel.initlMediaList)
+                                    currentMediaIndex=0
+                                    playMedia(currentMediaIndex)
+
+                                }else{
+                                    updateMediaList(url)
+                                }
+
+
 
 
                             }
@@ -255,18 +274,7 @@ class MainActivity : AppCompatActivity() {
                         else -> {}
                     }
 
-//                    val totalRequests = workIds.size
-//                    if (viewModel.completedRequests.value == totalRequests) {
-//                        //   onAllDownloadsComplete()
-//
-//                        // Remove workIds from SharedPreferences after completion
-//                        //  val sharedPreferences = getSharedPreferences("work_ids", Context.MODE_PRIVATE)
-//                        with(sharedPreferences.edit()) {
-//                            remove("work_ids_set")
-//                            remove("valid_file_names")
-//                            apply()
-//                        }
-//                    }
+
                 }
             }
     }
@@ -280,34 +288,9 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private fun checkWorkStatusOnAppStart() {
-        ///   val sharedPreferences = getSharedPreferences("work_ids", Context.MODE_PRIVATE)
-        val workIdStrings = sharedPreferences.getStringSet("work_ids_set", emptySet()) ?: emptySet()
 
-        // Log.d("Update211","downloadingFiles $downloadingFiles")
-        if (workIdStrings.isNotEmpty()) {
-            val workIds = workIdStrings.map { UUID.fromString(it) }
-            //viewModel.updateWorkIds(workIds) // Update ViewModel with workIds
-            observeWorkStatus(workIds)
-
-//            if (downloadingFiles.isNotEmpty()) {
-//                val list = mediaList.filterNot { data ->
-//                    downloadingFiles.contains(data._id)
-//                }
-//             //   Log.d("Update211","list out of downloadingFiles  $list")
-//             //   filteredList.clear()
-//               // filteredList.addAll(list)
-//            }
-        } else {
-            // No existing workIds, proceed with API call and scheduling downloads if needed
-            // scheduleDownloads(dataList) // Call this method with the appropriate data list
-
-        }
-    }
 
     private fun observeWorkStatus(workIds: List<UUID>) {
-//        val downloadingFiles =
-//            sharedPreferences.getStringSet("valid_file_names", emptySet()) ?: emptySet()
         workIds.forEach { workId ->
             //   WorkManager.getInstance(this).getWorkInfoByIdLiveData(workId)
             workManager.getWorkInfoByIdLiveData(workId)
