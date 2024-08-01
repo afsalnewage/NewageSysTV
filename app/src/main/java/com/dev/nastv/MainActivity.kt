@@ -6,7 +6,10 @@ package com.dev.nastv
 import android.animation.Animator
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
@@ -40,6 +43,8 @@ import com.dev.nastv.model.TvMedia
 import com.dev.nastv.network.Resource
 import com.dev.nastv.ui.MainViewModel
 import com.dev.nastv.ui.MediaItemsAdapter
+import com.dev.nastv.uttils.AppConstant
+import com.dev.nastv.uttils.AppConstant.TOKEN_EXPIRE
 import com.dev.nastv.uttils.AppUittils
 import com.dev.nastv.uttils.AppUittils.anniversary_party
 import com.dev.nastv.uttils.AppUittils.applyFadeInAnimation
@@ -55,11 +60,14 @@ import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_NAME_REQUEST
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_URL
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
+import com.google.common.base.Objects
 import dagger.hilt.android.AndroidEntryPoint
+import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.net.URISyntaxException
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -70,20 +78,21 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var previousView: View
-  var alertDialog: AlertDialog? = null
-    private val imageDuration=30000L
+    var alertDialog: AlertDialog? = null
+    private val imageDuration = 30000L
     private val birthdayMusic = R.raw.happy_birthday_acoustic                   //happy_birthday
     private val newJoineeMusic = R.raw.whip_afro_dancehall
     private val anniversaryMusic = R.raw.infinte_melodic_beat
     private val customMusic = R.raw.sunset_piano
+
     //= getSharedPreferences("work_ids", Context.MODE_PRIVATE)
     private lateinit var workManager: WorkManager
-   private var isFromBackgruond =false
+    private var isFromBackgruond = false
     private lateinit var exoPlayer: ExoPlayer
 
     // private lateinit var firebase: FirebaseMessaging
     private lateinit var binding: ActivityMainBinding
-    private lateinit var socket: Socket
+    private var socket: Socket? = null
 
 
     private var leftSwipe = false
@@ -94,7 +103,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var connectivityObserver: ConnectivityObserver
 
 
-
     private lateinit var rvAdapter: MediaItemsAdapter
 
     // val mediaList = ArrayList<MediaItemData>()
@@ -102,22 +110,40 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewModel: MainViewModel
     private val filteredList = ArrayList<TvMedia>()
     private val handler = Handler(Looper.getMainLooper())
-    private val autoScrollRunnable = Runnable { // val currentMediaIndex = viewModel.mediaIndex.value ?: 0
-        Log.d("Index23", "current index $currentMediaIndex")
+    private val autoScrollRunnable =
+        Runnable { // val currentMediaIndex = viewModel.mediaIndex.value ?: 0
+            Log.d("Index23", "current index $currentMediaIndex")
 
-        // Update the media index by incrementing and wrapping around the media list size
-        currentMediaIndex = (currentMediaIndex + 1) % mediaList.size
-        playMedia(currentMediaIndex)
-        // viewModel.updateIndex(newIndex)
+            // Update the media index by incrementing and wrapping around the media list size
+            currentMediaIndex = (currentMediaIndex + 1) % mediaList.size
+            playMedia(currentMediaIndex)
+            // viewModel.updateIndex(newIndex)
 
 
+        }
+
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == TOKEN_EXPIRE) {
+                val newToken = intent.getStringExtra("new_token")
+                Log.d("Response122", "onReceive ${newToken}")
+                if (newToken != null) {
+                    // initializeSocket(newToken)
+                    //  socket?.close()
+                    socket?.disconnect()
+                    socket?.close()
+                    SocketManager.disconnect()
+                    SocketManager.initialize(newToken)
+
+                    socket = SocketManager.getSocket()
+                    socket?.connect()
+                    observeSocket()
+                }
+
+            }
+        }
     }
-
-
-
-
-
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun scheduleDownloads(dataList: List<TvMedia>) {
@@ -125,37 +151,36 @@ class MainActivity : AppCompatActivity() {
         val validFileNames = mutableListOf<String>()
         val workManager = WorkManager.getInstance(this)
 
-       // val videos=dataList.filter {  it.event_type == "Video" }
+        // val videos=dataList.filter {  it.event_type == "Video" }
         for (data in dataList) {
             if (data.event_type == "Video") {
 
 
-
                 val fileName = "${data._id}.${AppUittils.getFileTypeFromUrl(data.file_url)}"
                 val file = AppUittils.getFileIfExists(this, fileName)
-                Log.d("Index23"," file exists  ${file?.exists()}")
-                if (file!=null &&file.exists()){
+                Log.d("Index23", " file exists  ${file?.exists()}")
+                if (file != null && file.exists()) {
                     validFileNames.add(fileName)
-                   finalList.add(data)
-                }else{
+                    finalList.add(data)
+                } else {
                     viewModel.videoList.add(data)
                 }
 
-            }else{
+            } else {
                 finalList.add(data)
             }
 
         }
         mediaList.clear()
-        if (viewModel.videoList.isNotEmpty()){
+        if (viewModel.videoList.isNotEmpty()) {
             mediaList.addAll(finalList)
-        }else{
+        } else {
             mediaList.addAll(viewModel.initlMediaList)
         }
 
         playMedia(0)
 
-        for (data in viewModel.videoList){
+        for (data in viewModel.videoList) {
             val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
                 .setInputData(
                     workDataOf(
@@ -177,14 +202,16 @@ class MainActivity : AppCompatActivity() {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("Backup in Progress")
         builder.setMessage("Data backing up, please wait...")
-        builder.setCancelable(false)
+        builder.setCancelable(true)
         alertDialog = builder.create()
         alertDialog?.show()
     }
+
     private fun dismissBackupDialog() {
         alertDialog?.takeIf { it.isShowing }?.dismiss()
     }
-    private fun downloadSingleItem(data: TvMedia){
+
+    private fun downloadSingleItem(data: TvMedia) {
         val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setInputData(
                 workDataOf(
@@ -196,7 +223,7 @@ class MainActivity : AppCompatActivity() {
         observeWork(downloadWorkRequest.id)
     }
 
-    private fun observeWork(workId:UUID){
+    private fun observeWork(workId: UUID) {
         workManager.getWorkInfoByIdLiveData(workId)
             .observe(this) { workInfo ->
                 if (workInfo != null) {
@@ -208,17 +235,17 @@ class MainActivity : AppCompatActivity() {
 
 
 
-                          viewModel.removeDownloadedItem(url.toString())
-                                for (item in viewModel.videoList){
-                                    downloadSingleItem(item)
-                                    break
-                                }
+                            viewModel.removeDownloadedItem(url.toString())
+                            for (item in viewModel.videoList) {
+                                downloadSingleItem(item)
+                                break
+                            }
 
                             if (url != null) {
 
-                                if (viewModel.videoList.isEmpty()){
+                                if (viewModel.videoList.isEmpty()) {
 
-                                    if (exoPlayer.isPlaying){
+                                    if (exoPlayer.isPlaying) {
                                         exoPlayer.pause()
                                         exoPlayer.stop()
                                         exoPlayer.clearMediaItems()
@@ -226,14 +253,12 @@ class MainActivity : AppCompatActivity() {
                                     showToast("Playlist updating.....")
                                     mediaList.clear()
                                     mediaList.addAll(viewModel.initlMediaList)
-                                    currentMediaIndex=0
+                                    currentMediaIndex = 0
                                     playMedia(currentMediaIndex)
 
-                                }else{
+                                } else {
                                     updateMediaList(url)
                                 }
-
-
 
 
                             }
@@ -246,8 +271,8 @@ class MainActivity : AppCompatActivity() {
 
                         WorkInfo.State.FAILED, WorkInfo.State.CANCELLED -> {
                             val url = workInfo.outputData.getString(KEY_FILE_URL)
-                            val  fileName=workInfo.outputData.getString(KEY_FILE_NAME)
-                            val  _id=workInfo.outputData.getString(KEY_FILE_NAME_REQUEST)
+                            val fileName = workInfo.outputData.getString(KEY_FILE_NAME)
+                            val _id = workInfo.outputData.getString(KEY_FILE_NAME_REQUEST)
 
                             if (fileName != null) {
                                 deleteFailedFile(fileName)
@@ -256,17 +281,18 @@ class MainActivity : AppCompatActivity() {
                             /*
                             if we need we can request for the same
                              */
-                             if (url!=null){
-                                 val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
-                                     .setInputData(
-                                         workDataOf(
-                                             "url" to url,
-                                             KEY_FILE_NAME_REQUEST to _id
-                                         )
-                                     ).build()
-                                 workManager.enqueue(downloadWorkRequest)
-                                 observeWork(downloadWorkRequest.id)
-                             }
+                            if (url != null) {
+                                val downloadWorkRequest =
+                                    OneTimeWorkRequestBuilder<DownloadWorker>()
+                                        .setInputData(
+                                            workDataOf(
+                                                "url" to url,
+                                                KEY_FILE_NAME_REQUEST to _id
+                                            )
+                                        ).build()
+                                workManager.enqueue(downloadWorkRequest)
+                                observeWork(downloadWorkRequest.id)
+                            }
 
 
                         }
@@ -280,14 +306,11 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun deleteFailedFile(file:String){
+    private fun deleteFailedFile(file: String) {
         CoroutineScope(Dispatchers.IO).launch {
             viewModel.deleteFileWithFileName(this@MainActivity, file)
         }
     }
-
-
-
 
 
     private fun observeWorkStatus(workIds: List<UUID>) {
@@ -303,12 +326,14 @@ class MainActivity : AppCompatActivity() {
                                 Log.d("Update211y", "url $url          SUCCEEDED")
 
                                 val downloadingFiles =
-                                    sharedPreferences.getStringSet("valid_file_names", emptySet()) ?: emptySet()
+                                    sharedPreferences.getStringSet("valid_file_names", emptySet())
+                                        ?: emptySet()
 
 
 
                                 if (url != null) {
-                                    val newSet = downloadingFiles.filterTo(mutableSetOf()) { it != url }
+                                    val newSet =
+                                        downloadingFiles.filterTo(mutableSetOf()) { it != url }
                                     sharedPreferences.edit().apply {
                                         putStringSet("valid_file_names", newSet.toSet())
                                         apply()
@@ -359,20 +384,19 @@ class MainActivity : AppCompatActivity() {
             it.file_url == url
         }
         mediaList.add(downloaded.first())
-        if (mediaList.size==1){
+        if (mediaList.size == 1) {
             binding.animation.pauseAnimation()
             binding.animation.visibility = View.GONE
             dismissBackupDialog()
-              playMedia(0)
+            playMedia(0)
         }
 
-     //  showToast("Adding items $url")
-        Log.d("pppR","new items $downloaded")
-        Log.d("pppR","mediaList ${mediaList.size}")
-       // mediaList.shuffle()
+        //  showToast("Adding items $url")
+        Log.d("pppR", "new items $downloaded")
+        Log.d("pppR", "mediaList ${mediaList.size}")
+        // mediaList.shuffle()
 
     }
-
 
 
     override fun onStart() {
@@ -384,7 +408,7 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         exoPlayer.release()
 
-        //   this.unregisterReceiver(receiver)
+        this.unregisterReceiver(receiver)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -397,14 +421,14 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(binding.root)
-
+        //initializeSocket(SessionUtils.authToken!!)
 
         previousView = binding.startView
         exoPlayer = ExoPlayer.Builder(this).build()
 
         Log.d("TOKEN_refresh", SessionUtils.refreshToken.toString())
         Log.d("TOKEN_auth", SessionUtils.authToken.toString())
-
+        this.registerReceiver(receiver, IntentFilter(TOKEN_EXPIRE))
 
         lifecycleScope.launch {
             connectivityObserver.observe().collect { status ->
@@ -425,18 +449,12 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-
-        viewModel.finalMediaLit.observe(this) {
-//            mediaList.clear()
-//            mediaList.addAll(it)
-
-           // viewModel.updateIndex(0)
-        }
-
-
-
-
-
+//        viewModel.finalMediaLit.observe(this) {
+////            mediaList.clear()
+////            mediaList.addAll(it)
+//
+//           // viewModel.updateIndex(0)
+//        }
 
 
         viewModel.mediaDataState.asLiveData().observe(this) {
@@ -459,32 +477,33 @@ class MainActivity : AppCompatActivity() {
                     Log.d("TTT", "${it.data.toString()}")
                     // applyFadeOutAnimation(binding.mainPager)
 
+
                     if (it.data != null) {
 
                         binding.animation.pauseAnimation()
                         binding.animation.visibility = View.GONE
 
 
-                         if (it.data.data!!.tv_apps.isNotEmpty()){
-                             binding.noDatScreen.visibility=View.GONE
-                             viewModel.initlMediaList = it.data.data!!.tv_apps
-                             scheduleDownloads(it.data.data!!.tv_apps)
-                         }else{
-                             //showCustomAlertDialog()
-                             binding.noDatScreen.visibility=View.VISIBLE
-                             handler.removeCallbacks(autoScrollRunnable)
-                              mediaList.clear()
-                             if (exoPlayer.isPlaying){
-                                 exoPlayer.pause()
-                                 exoPlayer.stop()
-                                 exoPlayer.clearMediaItems()
-                                 binding.videoScreen.visibility=View.GONE
-                             }
-                             binding.anniversaryFrame.visibility=View.GONE
-                             binding.birthdayFrame.visibility=View.GONE
-                             binding.newjoineeFrame.visibility=View.GONE
-                             binding.customFrame.visibility=View.GONE
-                         }
+                        if (it.data.data!!.tv_apps.isNotEmpty()) {
+                            binding.noDatScreen.visibility = View.GONE
+                            viewModel.initlMediaList = it.data.data!!.tv_apps
+                            scheduleDownloads(it.data.data!!.tv_apps)
+                        } else {
+                            //showCustomAlertDialog()
+                            binding.noDatScreen.visibility = View.VISIBLE
+                            handler.removeCallbacks(autoScrollRunnable)
+                            mediaList.clear()
+                            if (exoPlayer.isPlaying) {
+                                exoPlayer.pause()
+                                exoPlayer.stop()
+                                exoPlayer.clearMediaItems()
+                                binding.videoScreen.visibility = View.GONE
+                            }
+                            binding.anniversaryFrame.visibility = View.GONE
+                            binding.birthdayFrame.visibility = View.GONE
+                            binding.newjoineeFrame.visibility = View.GONE
+                            binding.customFrame.visibility = View.GONE
+                        }
 //
 
 //                        mediaList.addAll(it.data.data!!.tv_apps)
@@ -501,6 +520,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        //  SocketManager.initialize(SessionUtils.authToken!!)
+
 
 //        viewModel.mediaIndex.observe(this, Observer {
 //
@@ -508,32 +529,40 @@ class MainActivity : AppCompatActivity() {
 //        })
 
 
-
-
         // Initialize Socket
+        observeSocket()
+
+
+        //checkWorkStatusOnAppStart()
+        setUpPlayer()
+
+
+    }
+
+    private fun observeSocket() {
         socket = SocketManager.getSocket()
 
-        socket.on(Socket.EVENT_CONNECT) {
+        socket?.on(Socket.EVENT_CONNECT) {
             Log.d("Socket", "Connected")
 //            runOnUiThread {
 //                showToast("Socket connected")
 //            }
 
         }
-        socket.on(Socket.EVENT_CONNECT_ERROR) { args ->
+        socket?.on(Socket.EVENT_CONNECT_ERROR) { args ->
 
-            Log.e("Socket", " ${args.joinToString()}")
+            Log.e("Socket", "Socket error ${args.joinToString()}")
 //            runOnUiThread {
 //                showToast(" ${args.joinToString()}")
 //            }
         }
-        socket.on(Socket.EVENT_DISCONNECT){
-
+        socket?.on(Socket.EVENT_DISCONNECT) {
+            Log.d("Socket", "Connected")
 //            runOnUiThread {
 //                showToast("Socket dis-connected")
 //            }
         }
-        socket.on("Refresh") { args ->
+        socket?.on("Refresh") { args ->
 
 
             runOnUiThread {
@@ -544,15 +573,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         SocketManager.connect()
-
-
-        //checkWorkStatusOnAppStart()
-        setUpPlayer()
-
-
     }
-
-
 
     override fun onBackPressed() {
         super.onBackPressed()
@@ -563,12 +584,11 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         exoPlayer.pause()
         exoPlayer.stop()
-        isFromBackgruond=true
+        isFromBackgruond = true
     }
 
 
-
-    val playBackListner=object : Player.Listener {
+    val playBackListner = object : Player.Listener {
         override fun onPlaybackStateChanged(playbackState: Int) {
             super.onPlaybackStateChanged(playbackState)
             when (playbackState) {
@@ -576,8 +596,8 @@ class MainActivity : AppCompatActivity() {
 
                 Player.STATE_READY -> {
 
-                    Log.d("RRT","duration ${exoPlayer.duration}")
-                    val duration=exoPlayer.duration
+                    Log.d("RRT", "duration ${exoPlayer.duration}")
+                    val duration = exoPlayer.duration
                     handler.postDelayed(autoScrollRunnable, duration)
                 }
 
@@ -598,11 +618,11 @@ class MainActivity : AppCompatActivity() {
 
         val media = mediaList[index]
         Log.d("Index23", "playMedia index $index")
-        Log.d("YYYY","date without ${media.event_type}")
+        Log.d("YYYY", "date without ${media.event_type}")
 
         handler.removeCallbacks(autoScrollRunnable)
-              exoPlayer.removeListener(playBackListner)
-       // currentMediaIndex=(currentMediaIndex + 1) % mediaList.size
+        exoPlayer.removeListener(playBackListner)
+        // currentMediaIndex=(currentMediaIndex + 1) % mediaList.size
         when (media.event_type) {
 
             "Video" -> {
@@ -610,11 +630,11 @@ class MainActivity : AppCompatActivity() {
 
 
                 animateViews(showView = binding.videoScreen, hideView = previousView)
-               // if (exoPlayer.isPlaying) {
-                    exoPlayer.pause()
-                    exoPlayer.stop()
-                    exoPlayer.clearMediaItems()
-                    // exoPlayer.release()
+                // if (exoPlayer.isPlaying) {
+                exoPlayer.pause()
+                exoPlayer.stop()
+                exoPlayer.clearMediaItems()
+                // exoPlayer.release()
 
                 val width = media.video_width ?: 0
                 val height = media.video_height ?: 0
@@ -623,8 +643,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     AspectRatioFrameLayout.RESIZE_MODE_FILL
                 }
-
-
 
 
                 val fileName = "${media!!._id}.${AppUittils.getFileTypeFromUrl(media!!.file_url)}"
@@ -657,16 +675,22 @@ class MainActivity : AppCompatActivity() {
                 if (exoPlayer.isPlaying) {
                     exoPlayer.pause()
                     //exoPlayer.stop()
-                    exoPlayer.clearMediaItems() }
-                    val mediaItem: MediaItem =
-                        MediaItem.fromUri("android.resource://" +this.packageName + "/" + customMusic)
-                    exoPlayer!!.setMediaItem(mediaItem)
-                    exoPlayer.prepare()
-                    exoPlayer.play()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + customMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
 
 
 
-                loadImage(media.file_url, binding.customImage, placeholderImg = R.drawable.splash_tv, scaleType =ImageView.ScaleType.FIT_XY)
+                loadImage(
+                    media.file_url,
+                    binding.customImage,
+                    placeholderImg = R.drawable.splash_tv,
+                    scaleType = ImageView.ScaleType.FIT_XY
+                )
 
                 previousView = binding.customFrame
             }
@@ -678,19 +702,20 @@ class MainActivity : AppCompatActivity() {
                 if (exoPlayer.isPlaying) {
                     exoPlayer.pause()
                     //exoPlayer.stop()
-                    exoPlayer.clearMediaItems()    }
-                    val mediaItem: MediaItem =
-                        MediaItem.fromUri("android.resource://" +this.packageName + "/" + anniversaryMusic)
-                    exoPlayer!!.setMediaItem(mediaItem)
-                     exoPlayer.prepare()
-                    exoPlayer.play()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + anniversaryMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
 
                 loadImage(media.file_url, binding.profileAnniversary)
                 binding.anniversaryProfileName.text = media.title
                 binding.anniversaryProfileDesignation.text = media.user_position
                 binding.anniversaryTittle.text =
                     setAnniversaryYearText(media.anniversary_year ?: 0)
-                binding.anniversaryDate.text= AppUittils.formatDateString(media.event_date)
+                binding.anniversaryDate.text = AppUittils.formatDateString(media.event_date)
 
 
                 previousView = binding.anniversaryFrame
@@ -707,11 +732,11 @@ class MainActivity : AppCompatActivity() {
                     //exoPlayer.stop()
                     exoPlayer.clearMediaItems()
                 }
-                    val mediaItem: MediaItem =
-                        MediaItem.fromUri("android.resource://" +this.packageName + "/" + birthdayMusic)
-                    exoPlayer!!.setMediaItem(mediaItem)
-                    exoPlayer.prepare()
-                    exoPlayer.play()
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + birthdayMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
 
 
 
@@ -722,7 +747,7 @@ class MainActivity : AppCompatActivity() {
                 loadImage(
                     media.file_url,
                     binding.imageBg,
-                        scaleType = ImageView.ScaleType.FIT_XY
+                    scaleType = ImageView.ScaleType.FIT_XY
                 )
                 binding.popperViewBirthDay.start(party = party)
 
@@ -731,7 +756,7 @@ class MainActivity : AppCompatActivity() {
             }
 
 
-            "New Joinee"-> {
+            "New Joinee" -> {
                 animateViews(showView = binding.newjoineeFrame, hideView = previousView)
                 handler.postDelayed(autoScrollRunnable, imageDuration)
                 if (exoPlayer.isPlaying) {
@@ -739,11 +764,11 @@ class MainActivity : AppCompatActivity() {
                     //exoPlayer.stop()
                     exoPlayer.clearMediaItems()
                 }
-                    val mediaItem: MediaItem =
-                        MediaItem.fromUri("android.resource://" +this.packageName + "/" + newJoineeMusic)
-                    exoPlayer!!.setMediaItem(mediaItem)
-                    exoPlayer.prepare()
-                    exoPlayer.play()
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + newJoineeMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
 
 
 
@@ -812,14 +837,15 @@ class MainActivity : AppCompatActivity() {
 
                         //commented for tempprary
 
-                     //   val newIndex = (currentMediaIndex + 1) % mediaList.size
+                        //   val newIndex = (currentMediaIndex + 1) % mediaList.size
                         //for replay
                         playMedia(currentMediaIndex)
 //                        val currentMediaIndex = viewModel.mediaIndex.value ?: 0
 //                        viewModel.updateIndex((currentMediaIndex + 1) % mediaList.size)
 
                     }
-                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND->{
+
+                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND -> {
                         playMedia(currentMediaIndex)
 
                     }
@@ -849,16 +875,16 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     Player.STATE_READY -> {
-                        Log.d("RRT","duration ${exoPlayer.duration}")
+                        Log.d("RRT", "duration ${exoPlayer.duration}")
                         binding.animationView.pauseAnimation()
                         binding.animationView.visibility = View.GONE
                     }
 
                     Player.STATE_ENDED -> {
 
-                      //  exoPlayer.pause()
-                      //  val newIndex = (currentMediaIndex + 1) % mediaList.size
-                      //  playMedia(newIndex)
+                        //  exoPlayer.pause()
+                        //  val newIndex = (currentMediaIndex + 1) % mediaList.size
+                        //  playMedia(newIndex)
 //                        val currentMediaIndex = viewModel.mediaIndex.value ?: 0
 //                        viewModel.updateIndex((currentMediaIndex + 1) % mediaList.size)
                         //exoPlayer.release()
@@ -879,16 +905,16 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         //binding.mainPager.requestFocus()
-        if (isFromBackgruond&&mediaList.isNotEmpty()){
+        if (isFromBackgruond && mediaList.isNotEmpty()) {
             playMedia(0)
-            isFromBackgruond=false
+            isFromBackgruond = false
         }
 
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
 
-       // val currentMediaIndex = viewModel.mediaIndex.value ?: 0
+        // val currentMediaIndex = viewModel.mediaIndex.value ?: 0
         when (keyCode) {
             KeyEvent.KEYCODE_DPAD_LEFT -> {
 
@@ -903,12 +929,11 @@ class MainActivity : AppCompatActivity() {
 //
 //                    playMedia(mediaList.size-1)
 //                }
-                if (currentMediaIndex==0){
-                    currentMediaIndex=mediaList.size-1
+                if (currentMediaIndex == 0) {
+                    currentMediaIndex = mediaList.size - 1
                     playMedia(currentMediaIndex)
-                }
-                else{
-                    currentMediaIndex=(currentMediaIndex - 1) % mediaList.size
+                } else {
+                    currentMediaIndex = (currentMediaIndex - 1) % mediaList.size
                     playMedia(currentMediaIndex)
                 }
 
@@ -920,8 +945,7 @@ class MainActivity : AppCompatActivity() {
                 handler.removeCallbacks(autoScrollRunnable)
                 currentMediaIndex = (currentMediaIndex + 1) % mediaList.size
                 playMedia(currentMediaIndex)
-               // viewModel.updateIndex((currentMediaIndex + 1) % mediaList.size)
-
+                // viewModel.updateIndex((currentMediaIndex + 1) % mediaList.size)
 
 
             }
@@ -1027,7 +1051,6 @@ class MainActivity : AppCompatActivity() {
         }
         return buildedText
     }
-
 
 
     fun ViewPager2.setCurrentItem(

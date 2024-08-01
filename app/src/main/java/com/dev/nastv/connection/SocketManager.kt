@@ -7,10 +7,14 @@ import io.socket.client.Socket
 import org.json.JSONObject
 import java.net.URISyntaxException
 object SocketManager {
-    private lateinit var mSocket: Socket
+    private var mSocket: Socket? = null
+
 
 
     fun initialize(token: String) {
+        mSocket?.disconnect()
+        mSocket?.close()
+        mSocket=null
         val options = IO.Options().apply {
            query = "token=$token"
            transports= arrayOf("websocket")
@@ -28,16 +32,16 @@ object SocketManager {
         }
     }
 
-    fun getSocket(): Socket {
+    fun getSocket(): Socket? {
         return mSocket
     }
 
     fun connect() {
         Log.d("Excep23","${SessionUtils.authToken}")
-        mSocket.connect()
+        mSocket?.connect()
     }
 
     fun disconnect() {
-        mSocket.disconnect()
+        mSocket?.disconnect()
     }
 }
