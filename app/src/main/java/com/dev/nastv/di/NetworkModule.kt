@@ -1,5 +1,6 @@
 package com.dev.nastv.di
 
+import android.app.Application
 import android.content.Context
 import com.dev.nastv.apis.ApiService
 //import com.dev.nastv.db.AppDatabase
@@ -91,10 +92,10 @@ class NetworkModule {
     @Singleton
     @Provides
     fun provideAuthorizationInterceptor(
-       // app: Application,
+        app: Application,
         //dataStoreManager: DataStoreManager,
       //  @ApplicationScope externalScope: CoroutineScope
-    ) = AuthorizationInterceptor()
+    ) = AuthorizationInterceptor(app)
 
     @Singleton
     @Provides
