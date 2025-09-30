@@ -26,6 +26,7 @@ data class TvMedia(
     var video_height:Int=0,
     var hobbies: String?="",
     var message: String?="",
+    var news_image_url: String?="",
     var professional_background: String?="",
     val sort: Int,
     val start_date: String,

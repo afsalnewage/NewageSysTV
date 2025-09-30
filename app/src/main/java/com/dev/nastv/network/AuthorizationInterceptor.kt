@@ -38,21 +38,22 @@ class AuthorizationInterceptor(val context: Context) : Interceptor {
             val map = HashMap<String, Any?>()
             map["token"] = SessionUtils.authToken!!
             map["refresh_token"] = SessionUtils.refreshToken!!
-
+            Log.d("Response", "authRequest auth ${SessionUtils.authToken}")
+            Log.d("Response", "authRequest refresh ${SessionUtils.refreshToken}")
             val authRequest = firstRequest.newBuilder().removeHeader("Authorization")
                // .addHeader("User-Agent", "jkkkkkkkkkkkloitttt")
                 .post(RequestBodyUtil.getRequestBodyMap(map))
                 .url("$BASE_URL/auth/token")
 
                 .build()
-//            Log.d("Response", "authRequest ${authRequest}")
-//            Log.d("Response", "authRequest body ${authRequest.body.toString()}")
-//            Log.d("Response", "authRequest headers ${authRequest.headers}")
+            Log.d("Response", "authRequest ${authRequest}")
+            Log.d("Response", "authRequest body ${authRequest.body.toString()}")
+            Log.d("Response", "authRequest headers ${authRequest.headers}")
 
 
             val authResponse = chain.proceed(authRequest)
-//            Log.d("Response", "authRespons ${authResponse.code}")
-//            Log.d("Response", "authRespons ${authResponse.message}")
+            Log.d("Response", "authRespons ${authResponse.code}")
+            Log.d("Response", "authRespons ${authResponse.message}")
             if (authResponse.isSuccessful) {
                 try {
                     // Extracting the new token from the response

@@ -2,7 +2,7 @@ package com.dev.nastv.uttils
 
 object AppConstant {
    //dev
-   //const val BASE_URL="https://hrms-api.newagesme.com"
+  // const val BASE_URL="https://hrms-api.newagesme.com"
 
     //live
    const val BASE_URL="https://hrhub-api.newagesysindia.com"
@@ -16,15 +16,16 @@ object AppConstant {
     val PRE_REFRESH_TOKEN = "newagetv_pref_refresh_token"
 
    // dev
-//    const val DEFAULT_AUTH="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2Njk3OTdkYzQzMzhiMmM0YjRjZmZiY2UiLCJ1c2VySWQiOjM0MywiaWF0IjoxNzIxMjEwODQ0LCJleHAiOjE3MjEyOTcyNDR9.GDaUa4lnP0Ay1gyi7XMJjbKLElNwhG9DWWYhdkcFr8s"
-//     const val DEFAULT_REFRESH="8717ba17219d0a5e3f984a1640128fad0a22b9097189edac070d73a30608cd2b9d7f3f7e6253a583"
+//    const val DEFAULT_AUTH="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2OGE0MTZjNzM4NmMyMGY2MjdiYWE0MWYiLCJ1c2VySWQiOjM0MywiaWF0IjoxNzU1NTg0MTk5LCJleHAiOjE3NTU2NzA1OTl9.t7TXahlb6mbHQGcbRVLXf7EIEIG4V9qaXJy_q33BaUk"
+//    const val DEFAULT_REFRESH="6e9d32ce16aaaabc73885d58c2978b9d141cfc7e9b9434e9b991c1d60a804e1055a94e73b1bde821"
+
 
 
 //     live
-//const val DEFAULT_AUTH="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NmE4YmQ3ODQ0NTc1ZjJiZDIxODA2YjYiLCJ1c2VySWQiOjI3NCwiaWF0IjoxNzIyMzM0NTg0LCJleHAiOjE3MjI0MjA5ODR9.X4io_JLHx7p2tLV6TdN32sr8E15zenFQ7udL6Oj867A"
-//    const val DEFAULT_REFRESH="b2dacf60a964dba7f992db6f856684bd345258e719f121633ff45613f6ca7a93a76b21c02f9790d4"
-const val DEFAULT_AUTH="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2NmFiMzJlNDhlZTUyNTAyMmMwZWRlNjQiLCJ1c2VySWQiOjI3NCwiaWF0IjoxNzIyNDk1NzE2LCJleHAiOjE3MjI1ODIxMTZ9.L5250EfU-Ntu1sLIp_7ykHuwWJo7Z2TEvwmcpUB0zUs"
-    const val DEFAULT_REFRESH="3da340474f97844c5ecb6bbc7588c033a2cd162ee81c1a03171b952168ef35c6a6c5d8fce79e7600"
+
+const val DEFAULT_AUTH="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiI2OGRiZDAwODYwNTdkMjA0OTBmMDM0ZTMiLCJ1c2VySWQiOjI3NCwiaWF0IjoxNzU5MjM2MTA0LCJleHAiOjE3NTkzMjI1MDR9.nRe5zFt5veyg70VHq4wJF2_w8vQp93TIuNmmaybiy3Y"
+   const val DEFAULT_REFRESH="d1b3770d46a2d43b8d3f807a1f7e97d0e4f0fb058f5a1466eb06e64155554e21569ddd03672825b7"
+
 
 
 }

@@ -3,6 +3,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="pink">#D149B6</color>
+    <color name="light_pink">#CD0F97</color>
     <color name="golden">#E4BE34</color>
     <color name="golden_light">#E2C860</color>
     <color name="green">#7EDB92</color>

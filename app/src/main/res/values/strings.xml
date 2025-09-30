@@ -19,7 +19,8 @@
     <string name="buy_1">Buy and Own</string>
     <string name="buy_2">AT $9.99</string>
     <string name="movie">Movie</string>
-
+    <string name="dummy_text">The first computer virus, named creeper created in early 1970s. It display messge:Im creeper,catch me if you can! -and it is the reason we have anti virus software today</string>
+    <string name="dummy_text1">Saas stands for Software as a Service.Instead of  Installing in your computer it allow to access online-like google Docs or Microsoft  365- where updates and maintenance handled by provider</string>
     <!-- Error messages -->
     <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>

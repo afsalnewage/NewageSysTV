@@ -4,6 +4,7 @@ package com.dev.nastv
 
 //import android.R
 import android.animation.Animator
+import android.animation.ObjectAnimator
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
 import android.content.BroadcastReceiver
@@ -26,6 +27,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AnimationUtils
+import android.view.animation.LinearInterpolator
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -43,7 +45,6 @@ import com.dev.nastv.model.TvMedia
 import com.dev.nastv.network.Resource
 import com.dev.nastv.ui.MainViewModel
 import com.dev.nastv.ui.MediaItemsAdapter
-import com.dev.nastv.uttils.AppConstant
 import com.dev.nastv.uttils.AppConstant.TOKEN_EXPIRE
 import com.dev.nastv.uttils.AppUittils
 import com.dev.nastv.uttils.AppUittils.anniversary_party
@@ -60,15 +61,11 @@ import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_NAME_REQUEST
 import com.dev.nastv.worker.DownloadWorker.Companion.KEY_FILE_URL
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
-import com.google.common.base.Objects
 import dagger.hilt.android.AndroidEntryPoint
-import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.net.URISyntaxException
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
@@ -84,6 +81,7 @@ class MainActivity : AppCompatActivity() {
     private val newJoineeMusic = R.raw.whip_afro_dancehall
     private val anniversaryMusic = R.raw.infinte_melodic_beat
     private val customMusic = R.raw.sunset_piano
+    private val commonMusic = R.raw.alegend_pinnacle_freetouse
 
     //= getSharedPreferences("work_ids", Context.MODE_PRIVATE)
     private lateinit var workManager: WorkManager
@@ -105,13 +103,13 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var rvAdapter: MediaItemsAdapter
 
-    // val mediaList = ArrayList<MediaItemData>()
+
     val mediaList = ArrayList<TvMedia>()
     private lateinit var viewModel: MainViewModel
-    private val filteredList = ArrayList<TvMedia>()
+
     private val handler = Handler(Looper.getMainLooper())
     private val autoScrollRunnable =
-        Runnable { // val currentMediaIndex = viewModel.mediaIndex.value ?: 0
+        Runnable {
             Log.d("Index23", "current index $currentMediaIndex")
 
             // Update the media index by incrementing and wrapping around the media list size
@@ -543,7 +541,7 @@ class MainActivity : AppCompatActivity() {
         socket = SocketManager.getSocket()
 
         socket?.on(Socket.EVENT_CONNECT) {
-            Log.d("Socket", "Connected")
+            Log.d("YYY", "Socket Connected")
 //            runOnUiThread {
 //                showToast("Socket connected")
 //            }
@@ -551,19 +549,19 @@ class MainActivity : AppCompatActivity() {
         }
         socket?.on(Socket.EVENT_CONNECT_ERROR) { args ->
 
-            Log.e("Socket", "Socket error ${args.joinToString()}")
+            Log.e("YYY", "Socket error ${args.joinToString()}")
 //            runOnUiThread {
 //                showToast(" ${args.joinToString()}")
 //            }
         }
         socket?.on(Socket.EVENT_DISCONNECT) {
-            Log.d("Socket", "Connected")
+            Log.d("YYY", " Socket DisConnected")
 //            runOnUiThread {
 //                showToast("Socket dis-connected")
 //            }
         }
         socket?.on("Refresh") { args ->
-
+            Log.d("YYY", "Socket event refresh")
 
             runOnUiThread {
                 showToast("Media list updated.")
@@ -778,7 +776,7 @@ class MainActivity : AppCompatActivity() {
                     this.newjoineeDesignation.text = media.user_position
                     this.textJoiningDate.text =
                         "Date of joining: ${AppUittils.formatDateString(media.event_date)}"
-                    this.textEducation.text = media.educational_qualification
+                    // this.textEducation.text = media.educational_qualification
                     this.textProfessionalBackground.text = media.professional_background
                     this.textHobbies.text = media.hobbies
                 }
@@ -790,14 +788,236 @@ class MainActivity : AppCompatActivity() {
                 applySlideInAnimation(binding.newjoineeMessage)
                 applySlideInAnimation(binding.newjoineeProfileName)
                 applySlideInAnimation(binding.newjoineeDesignation)
-                applySlideInAnimation(binding.education)
+                // applySlideInAnimation(binding.education)
                 applySlideInAnimation(binding.textJoiningDate)
-                applySlideInAnimation(binding.textEducation)
+                // applySlideInAnimation(binding.textEducation)
                 applySlideInAnimation(binding.hobbies)
                 applySlideInAnimation(binding.textHobbies)
                 applySlideInAnimation(binding.professional)
                 applySlideInAnimation(binding.textProfessionalBackground)
                 previousView = binding.newjoineeFrame
+            }
+
+            "News" -> {
+
+                animateViews(showView = binding.newsOfDay, hideView = previousView)
+                handler.postDelayed(autoScrollRunnable, imageDuration)
+
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    //exoPlayer.stop()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + commonMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
+
+                val imageView = findViewById<ImageView>(R.id.icon_img)
+
+                val rotateAnimator =
+                    ObjectAnimator.ofFloat(imageView, "rotationY", 0f, 360f).apply {
+                        duration = 2000 // 2 seconds per rotation
+                        repeatCount = ValueAnimator.INFINITE
+                        interpolator = LinearInterpolator() // Smooth constant speed
+                    }
+                rotateAnimator.start()
+
+
+
+                binding.newsMsg.text = media.title
+                binding.newsBotomMsg.text = media.message
+
+                // binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
+                // binding.imgBanner.visibility = View.VISIBLE b
+
+                Log.d("YYY3","data ${media.file_url}")
+                Log.d("YYY3","data ${media.news_image_url}")
+
+                val imageUrl = if (media.file_url.isNotBlank()) media.file_url else media.news_image_url
+
+
+                loadImage(
+                    imageUrl,
+                    binding.newsImag,
+                    scaleType = ImageView.ScaleType.FIT_XY
+                )
+
+
+
+                ///binding.popperViewBirthDay.start(party = party)
+
+                previousView = binding.newsOfDay
+
+            }
+
+            "Insight" -> {
+
+                animateViews(showView = binding.insightOfDay, hideView = previousView)
+                handler.postDelayed(autoScrollRunnable, imageDuration)
+
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    //exoPlayer.stop()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + commonMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
+
+
+                // binding.newsMsg.text = media.title
+                binding.insightMsg.text = media.message
+
+                // binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
+                // binding.imgBanner.visibility = View.VISIBLE
+//                loadImage(
+//                    media.news_image_url,
+//                    binding.newsImag,
+//                    scaleType = ImageView.ScaleType.FIT_XY
+//                )
+                ///binding.popperViewBirthDay.start(party = party)
+
+                previousView = binding.insightOfDay
+
+            }
+
+            "Health" -> {
+
+                animateViews(showView = binding.tipOfDay, hideView = previousView)
+                handler.postDelayed(autoScrollRunnable, imageDuration)
+
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    //exoPlayer.stop()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + commonMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
+
+
+                // binding.newsMsg.text = media.title
+                binding.tipOfDayMsg.text = media.message
+
+                // binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
+                // binding.imgBanner.visibility = View.VISIBLE
+//                loadImage(
+//                    media.news_image_url,
+//                    binding.newsImag,
+//                    scaleType = ImageView.ScaleType.FIT_XY
+//                )
+                ///binding.popperViewBirthDay.start(party = party)
+
+                previousView = binding.tipOfDay
+
+            }
+
+            "History" -> {
+
+                animateViews(showView = binding.onThisDay, hideView = previousView)
+                handler.postDelayed(autoScrollRunnable, imageDuration)
+
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    //exoPlayer.stop()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + commonMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
+
+
+
+                binding.historyTittle.text = media.title
+                binding.historyMsg.text = media.message
+
+                // binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
+                // binding.imgBanner.visibility = View.VISIBLE
+//                loadImage(
+//                    media.news_image_url,
+//                    binding.newsImag,
+//                    scaleType = ImageView.ScaleType.FIT_XY
+//                )
+                ///binding.popperViewBirthDay.start(party = party)
+
+                previousView = binding.onThisDay
+
+            }
+
+            "Quote" -> {
+
+                animateViews(showView = binding.qouteOfDay, hideView = previousView)
+                handler.postDelayed(autoScrollRunnable, imageDuration)
+
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    //exoPlayer.stop()
+                    exoPlayer.clearMediaItems()
+                }
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + commonMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
+
+
+                //  binding.historyTittle.text = media.title
+                binding.qouteOfDayMsg.text = media.message
+
+                // binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
+                // binding.imgBanner.visibility = View.VISIBLE
+//                loadImage(
+//                    media.news_image_url,
+//                    binding.newsImag,
+//                    scaleType = ImageView.ScaleType.FIT_XY
+//                )
+                ///binding.popperViewBirthDay.start(party = party)
+
+                previousView = binding.qouteOfDay
+
+            }
+
+            "Word" -> {
+
+                animateViews(showView = binding.wordOfDay, hideView = previousView)
+                handler.postDelayed(autoScrollRunnable, imageDuration)
+
+                if (exoPlayer.isPlaying) {
+                    exoPlayer.pause()
+                    //exoPlayer.stop()
+                    exoPlayer.clearMediaItems()
+                }
+                Log.d("YYU", "length ${media.message?.length}")
+                val mediaItem: MediaItem =
+                    MediaItem.fromUri("android.resource://" + this.packageName + "/" + commonMusic)
+                exoPlayer!!.setMediaItem(mediaItem)
+                exoPlayer.prepare()
+                exoPlayer.play()
+
+
+
+                binding.tittle1.text = media.title
+                binding.wordOfDayMsg.text = media.message
+
+                // binding.birthdayDat.text = AppUittils.formatDateString(media.event_date)
+                // binding.imgBanner.visibility = View.VISIBLE
+//                loadImage(
+//                    media.news_image_url,
+//                    binding.newsImag,
+//                    scaleType = ImageView.ScaleType.FIT_XY
+//                )
+                ///binding.popperViewBirthDay.start(party = party)
+
+                previousView = binding.wordOfDay
+
             }
         }
 

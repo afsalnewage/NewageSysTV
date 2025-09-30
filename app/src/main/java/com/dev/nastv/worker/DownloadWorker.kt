@@ -26,13 +26,9 @@ class DownloadWorker (private val context: Context, workerParams: WorkerParamete
         val url = inputData.getString("url") ?: return Result.failure()
         val name =inputData.getString(KEY_FILE_NAME_REQUEST) ?: return Result.failure() /* id of the video object */
            //   Log.d("WorkInfo23","file name $name")
-        val fileExtension = getFileTypeFromUrl(url)                //url.substringAfterLast('.', "")
+        val fileExtension = getFileTypeFromUrl(url)
         val fileName = "$name.$fileExtension"
-      // val file = File(applicationContext.filesDir, fileName)
-       // val outputFile = File(applicationContext.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), fileName)
 
-       // val appSpecificDir = context.getExternalFilesDir("com.dev.nastv.data")
-        //val mediaDir = context.getExternalFilesDir(Environment.Directory_m)
         val externalStorageDir = Environment.getExternalStorageDirectory()
 
         // Create the path to Android/media/com.dev.nastv

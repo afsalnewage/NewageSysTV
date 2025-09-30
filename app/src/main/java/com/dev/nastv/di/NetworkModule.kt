@@ -44,11 +44,11 @@ class NetworkModule {
         @ApplicationContext context: Context
     ): OkHttpClient =
         OkHttpClient.Builder().run {
-//            if (BuildConfig.DEBUG) {
+           // if (BuildConfig.DEBUG) {
 //                val logging = HttpLoggingInterceptor()
 //                logging.level = HttpLoggingInterceptor.Level.BODY
 //                addInterceptor(logging)
-//            }
+//           // }
             connectTimeout(1, TimeUnit.MINUTES)
             readTimeout(1, TimeUnit.MINUTES)
             writeTimeout(1, TimeUnit.MINUTES)
