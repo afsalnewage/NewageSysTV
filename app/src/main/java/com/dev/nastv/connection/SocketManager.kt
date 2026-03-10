@@ -1,34 +1,47 @@
 package com.dev.nastv.connection
+import android.util.Log
 import com.dev.nastv.uttils.AppConstant.BASE_URL
+import com.dev.nastv.uttils.SessionUtils
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONObject
 import java.net.URISyntaxException
 object SocketManager {
-    private lateinit var mSocket: Socket
-    private const val SERVER_URL = "http://yourserver.com"  // Replace with your server URL
+    private var mSocket: Socket? = null
+
+
 
     fun initialize(token: String) {
+        mSocket?.disconnect()
+        mSocket?.close()
+        mSocket=null
         val options = IO.Options().apply {
-            query = "token=$token" // Pass token as a query parameter
+           query = "token=$token"
+           transports= arrayOf("websocket")
+
+            //this.extraHeaders=mapOf("Authorization" to listOf(token)) //token
         }
 
+
         try {
-            mSocket = IO.socket(BASE_URL, options)
+            mSocket = IO.socket(BASE_URL , options)
+
         } catch (e: URISyntaxException) {
+            Log.d("Excep23","${e.cause?.message}")
             throw RuntimeException(e)
         }
     }
 
-    fun getSocket(): Socket {
+    fun getSocket(): Socket? {
         return mSocket
     }
 
     fun connect() {
-        mSocket.connect()
+        Log.d("Excep23","${SessionUtils.authToken}")
+        mSocket?.connect()
     }
 
     fun disconnect() {
-        mSocket.disconnect()
+        mSocket?.disconnect()
     }
 }

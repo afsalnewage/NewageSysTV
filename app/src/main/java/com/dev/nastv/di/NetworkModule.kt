@@ -1,5 +1,6 @@
 package com.dev.nastv.di
 
+import android.app.Application
 import android.content.Context
 import com.dev.nastv.apis.ApiService
 //import com.dev.nastv.db.AppDatabase
@@ -43,11 +44,11 @@ class NetworkModule {
         @ApplicationContext context: Context
     ): OkHttpClient =
         OkHttpClient.Builder().run {
-//            if (BuildConfig.DEBUG) {
+           // if (BuildConfig.DEBUG) {
 //                val logging = HttpLoggingInterceptor()
 //                logging.level = HttpLoggingInterceptor.Level.BODY
 //                addInterceptor(logging)
-//            }
+//           // }
             connectTimeout(1, TimeUnit.MINUTES)
             readTimeout(1, TimeUnit.MINUTES)
             writeTimeout(1, TimeUnit.MINUTES)
@@ -91,10 +92,10 @@ class NetworkModule {
     @Singleton
     @Provides
     fun provideAuthorizationInterceptor(
-       // app: Application,
+        app: Application,
         //dataStoreManager: DataStoreManager,
       //  @ApplicationScope externalScope: CoroutineScope
-    ) = AuthorizationInterceptor()
+    ) = AuthorizationInterceptor(app)
 
     @Singleton
     @Provides

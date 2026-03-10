@@ -1,9 +1,14 @@
 package com.dev.nastv.network
+
+import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.dev.nastv.connection.SocketManager
 import com.dev.nastv.di.NetworkModule
 import com.dev.nastv.uttils.AppConstant
 import com.dev.nastv.uttils.AppConstant.BASE_URL
+import com.dev.nastv.uttils.AppConstant.TOKEN_EXPIRE
 import com.dev.nastv.uttils.RequestBodyUtil
 import com.dev.nastv.uttils.SessionUtils
 import okhttp3.Interceptor
@@ -11,47 +16,74 @@ import okhttp3.Response
 import org.json.JSONObject
 import java.util.HashMap
 
-
-class AuthorizationInterceptor  :Interceptor {
+class AuthorizationInterceptor(val context: Context) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         var firstRequest = chain.request()
 
         if (!SessionUtils.authToken.isNullOrEmpty()) {
-            firstRequest =
-                chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer " + SessionUtils.authToken!!)
-                    .build()
+            firstRequest = firstRequest.newBuilder()
+                .addHeader("Authorization", "Bearer " + SessionUtils.authToken!!).build()
         }
+
+
         var response = chain.proceed(firstRequest)
-        if (response.code == 401 ) {//&& SessionUtils.hasSession()
+        Log.d("Response", "Response code: ${response.code}")
+
+
+        if (response.code == 401) {
             response.close()
+
+
             val map = HashMap<String, Any?>()
             map["token"] = SessionUtils.authToken!!
             map["refresh_token"] = SessionUtils.refreshToken!!
-            val authRequest = firstRequest.newBuilder()
+            Log.d("Response", "authRequest auth ${SessionUtils.authToken}")
+            Log.d("Response", "authRequest refresh ${SessionUtils.refreshToken}")
+            val authRequest = firstRequest.newBuilder().removeHeader("Authorization")
+               // .addHeader("User-Agent", "jkkkkkkkkkkkloitttt")
                 .post(RequestBodyUtil.getRequestBodyMap(map))
-                .url("$BASE_URL/auth/token").build()  // generate new token url
-            response = chain.proceed(authRequest)
+                .url("$BASE_URL/auth/token")
 
-            if (response.isSuccessful) {
+                .build()
+            Log.d("Response", "authRequest ${authRequest}")
+            Log.d("Response", "authRequest body ${authRequest.body.toString()}")
+            Log.d("Response", "authRequest headers ${authRequest.headers}")
+
+
+            val authResponse = chain.proceed(authRequest)
+            Log.d("Response", "authRespons ${authResponse.code}")
+            Log.d("Response", "authRespons ${authResponse.message}")
+            if (authResponse.isSuccessful) {
                 try {
+                    // Extracting the new token from the response
+                    val authResponseBody = authResponse.body?.string()
                     val auth =
-                        JSONObject(response.body?.string()!!).getJSONObject("data").getString("token")
+                        JSONObject(authResponseBody!!).getJSONObject("data").getString("token")
+                    Log.d("Response122", "New Token: $auth")
+
+                    val intent = Intent(TOKEN_EXPIRE)
+                    intent.putExtra("new_token", auth)
+                    context.sendBroadcast(intent)
+                    // Saving the new token
                     SessionUtils.saveAuthToken(auth)
-                    response.close()
+                    authResponse.close()
+
+                    // Creating a new request with the new token
                     val secondRequest = firstRequest.newBuilder().removeHeader("Authorization")
-                        .addHeader("Authorization", "Bearer $auth")
-                        .method(firstRequest.method, firstRequest.body).build()
+                        .addHeader("Authorization", "Bearer $auth").build()
+//
+
+
+                    // Proceeding with the second request
                     response = chain.proceed(secondRequest)
 
                 } catch (e: Exception) {
                     e.printStackTrace()
-                }
+                 }
 
-            } else if (response.code == 401) {
-//                val intent = Intent(Intent.ACTION_MAIN)
-//                intent.putExtra(INTENT_BROADCAST, AppConstants.BC_AUTH_LOGOUT)
+            } else if (authResponse.code == 401) {
+
 //                LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
             }
         }
@@ -60,49 +92,3 @@ class AuthorizationInterceptor  :Interceptor {
     }
 }
 
-
-//        override fun intercept(chain: Interceptor.Chain): Response {
-//            var firstRequest = chain.request()
-//
-//
-//            if (!SessionUtils.authToken.isNullOrEmpty()) {
-//                firstRequest =
-//                    chain.request().newBuilder()
-//                        .addHeader("Authorization", "Bearer " + SessionUtils.authToken!!)
-//                        .build()
-//            }
-//            var response = chain.proceed(firstRequest)
-//            val authentication = response.header("Authentication")
-//
-//            if (authentication != null && authentication.equals("false", true)
-//                && SessionUtils.refreshToken!!.isNotEmpty()
-//            ) {
-//
-//                val builder = firstRequest.newBuilder()
-//                    .addHeader("Authorization","Bearer " + SessionUtils.authToken!!)
-//                    .addHeader("refresh-token", SessionUtils.refreshToken!!)
-//                    .method(firstRequest.method, firstRequest.body)
-//
-//                val secondRequest = builder.build()
-//                response.close()
-//                response = chain.proceed(secondRequest)
-//            } else if (response.code == 400 || response.code >= 500) {
-//    //            //This for handling server issues
-//    //            val localBroadcastManager = LocalBroadcastManager.getInstance(context)
-//    //            val localIntent = Intent("custom-event-name").putExtra("server_down", true)
-//    //            localBroadcastManager.sendBroadcast(localIntent)
-//            }
-//
-//            val authToken = response.header("Authorization")
-//            val refreshToken = response.header("refresh-token")
-//
-//
-//            if (!authToken.isNullOrEmpty() && !refreshToken.isNullOrEmpty()) {
-//
-//                SessionUtils.saveToken(authToken, refreshToken)
-//            }
-//            return response
-//        }
-//
-//
-//}

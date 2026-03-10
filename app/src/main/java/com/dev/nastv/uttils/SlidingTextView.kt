@@ -8,6 +8,7 @@ import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.ReplacementSpan
 import android.util.AttributeSet
+import android.util.Log
 import androidx.appcompat.widget.AppCompatTextView
 
 class SlidingTextView @JvmOverloads constructor(
@@ -26,8 +27,9 @@ class SlidingTextView @JvmOverloads constructor(
         post {
             val textWidth = paint.measureText(text.toString())
             val viewWidth = width.toFloat()
-
-            if (textWidth > viewWidth) {
+               Log.d("RRR3","text width $textWidth")
+               Log.d("RRR3","text width ${text.length}") //textWidth > viewWidth
+            if (text.length>25) {
                 // Text is too long, use marquee animation
                 ellipsize = TextUtils.TruncateAt.MARQUEE
                 marqueeRepeatLimit = -1

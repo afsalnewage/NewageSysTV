@@ -15,7 +15,8 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.dev.nastv"
+        //applicationId = "com.dev.nastv"
+        applicationId = "com.dev.nastv_dev"
         minSdk = 24
         targetSdk = 33
         versionCode = 1
@@ -38,11 +39,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11" //"1.8"
     }
 }
 
@@ -108,7 +109,11 @@ dependencies {
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
-    implementation ("io.socket:socket.io-client:2.0.0")
+  //  implementation ("io.socket:socket.io-client:2.0.0")
+
+    implementation("io.socket:socket.io-client:2.0.0") {
+        exclude(group = "org.json", module = "json")
+    }
 
     implementation ("com.github.SMehranB:AnimatedTextView:1.1.0")
 

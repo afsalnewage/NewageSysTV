@@ -42,9 +42,9 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
-
+<!--        android:theme="@style/SecondaryTheme"-->
         <activity
-            android:theme="@style/SecondaryTheme"
+
             android:name=".MainActivity"
             android:banner="@mipmap/ic_banner"
             android:exported="true"
